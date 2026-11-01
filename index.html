@@ -556,9 +556,15 @@ button:focus-visible, select:focus-visible { outline-color: var(--blue) }
     const vs = enVoices();
     return vs.slice().sort((a, b) => (isEnUS(b) - isEnUS(a)) || (voiceRank(b) - voiceRank(a)) || /^Samantha/i.test(b.name) - /^Samantha/i.test(a.name))[0] || null;
   }
+  const voiceId = v => v.voiceURI || v.name;
+  // Android's Chrome goes by the language and ignores the voice when they differ, so the utterance takes the voice's own language.
+  function useVoice(u, v) {
+    if (v) u.voice = v;
+    u.lang = v ? v.lang.replace("_", "-") : "en-US";
+  }
   function voice() {
     if (!tts) return null;
-    const chosen = opts.voice && enVoices().find(v => v.name === opts.voice);
+    const chosen = opts.voice && enVoices().find(v => voiceId(v) === opts.voice || v.name === opts.voice);
     return chosen || bestVoice();
   }
   // "Leer todo el tema": reads every phrase in order, scrolling each one into view and marking it.
@@ -612,8 +618,8 @@ button:focus-visible, select:focus-visible { outline-color: var(--blue) }
       if (k >= parts.length) { h.end(); return }
       const c = parts[k++];
       const u = new SpeechSynthesisUtterance(c.text);
-      if (v) u.voice = v;
-      u.lang = "en-US"; u.rate = rate;
+      useVoice(u, v);
+      u.rate = rate;
       u.onstart = () => { if (first) { first = false; h.start() } h.chunk(c.at) };
       u.onboundary = e => { if (!e.name || e.name === "word") h.word(c.at + e.charIndex) };
       u.onend = next;
@@ -932,7 +938,7 @@ button:focus-visible, select:focus-visible { outline-color: var(--blue) }
     const once = n => {
       if (btn && speakingBtn !== btn) return;
       const r = rate || parseFloat(opts.speed), spoken = speechOf(text).say;
-      if (!btn) { const u = new SpeechSynthesisUtterance(spoken); const v = voice(); if (v) u.voice = v; u.lang = "en-US"; u.rate = r; speechSynthesis.speak(u); return }
+      if (!btn) { const u = new SpeechSynthesisUtterance(spoken); useVoice(u, voice()); u.rate = r; speechSynthesis.speak(u); return }
       const k = card ? karaoke(card, text) : null;
       if (k) panelMark(i, "now");
       if (total > 1) btn.innerHTML = `■ Stop · ${n}/${total === Infinity ? "∞" : total}`;
@@ -1502,7 +1508,7 @@ button:focus-visible, select:focus-visible { outline-color: var(--blue) }
       .sort((a, b) => (isEnUS(b) - isEnUS(a)) || (voiceRank(b) - voiceRank(a)) || a.name.localeCompare(b.name));
     if (!vs.length) { vp.hidden = true; dropify(vp); return }
     const cur = voice();
-    vp.innerHTML = vs.map(v => `<option value="${esc(v.name)}"${cur && v.name === cur.name ? " selected" : ""}>${natural(v) ? "★ " : ""}Voice: ${esc(v.name)} · ${esc(region(v))}</option>`).join("");
+    vp.innerHTML = vs.map(v => `<option value="${esc(voiceId(v))}"${cur && voiceId(v) === voiceId(cur) ? " selected" : ""}>${natural(v) ? "★ " : ""}Voice: ${esc(v.name)} · ${esc(region(v))}</option>`).join("");
     vp.hidden = false;
     dropify(vp);
   }
