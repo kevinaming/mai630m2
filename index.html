@@ -538,12 +538,23 @@ button:focus-visible, select:focus-visible { outline-color: var(--blue) }
   // English voices only. Safari writes the language as "en_US", other browsers as "en-US".
   const isEnUS = v => /^en[-_]US/i.test(v.lang);
   const enVoices = () => (tts ? speechSynthesis.getVoices() : []).filter(v => /^en[-_]/i.test(v.lang));
-  const PREFERRED = [/Samantha.*(Premium|Enhanced|Mejorada)/i, /Ava.*(Premium|Enhanced)/i, /Zoe.*(Premium|Enhanced)/i, /Aria.*Natural/i, /Jenny.*Natural/i,
-    /Google US English/i, /^Samantha/i, /Aria|Jenny/i, /Nicky/i];
+  // Joke voices and the old robotic ones (Eloquence) are left out of the menu.
+  const SKIP = /^(Albert|Bad News|Bahh|Bells|Boing|Bubbles|Cellos|Good News|Jester|Organ|Superstar|Trinoids|Whisper|Wobble|Zarvox|Grandma|Grandpa|Eddy|Flo|Reed|Rocko|Sandy|Shelley|Junior|Ralph|Fred|Kathy)\b/i;
+  // How natural a voice sounds: downloaded Apple voices first, then Microsoft's and Google's, then any other voice from the internet.
+  function voiceRank(v) {
+    const id = v.name + " " + (v.voiceURI || "");
+    if (SKIP.test(v.name) || /compact|espeak/i.test(id)) return 0;
+    if (/premium/i.test(id)) return 6;
+    if (/enhanced|mejorada|neural/i.test(id)) return 5;
+    if (/natural/i.test(id)) return 4;
+    if (/google/i.test(id)) return 3;
+    if (/network/i.test(id) || v.localService === false) return 2;
+    return 1;
+  }
+  const natural = v => voiceRank(v) >= 3;
   function bestVoice() {
     const vs = enVoices();
-    for (const rx of PREFERRED) { const v = vs.find(x => isEnUS(x) && rx.test(x.name)); if (v) return v }
-    return vs.find(isEnUS) || vs[0] || null;
+    return vs.slice().sort((a, b) => (isEnUS(b) - isEnUS(a)) || (voiceRank(b) - voiceRank(a)) || /^Samantha/i.test(b.name) - /^Samantha/i.test(a.name))[0] || null;
   }
   function voice() {
     if (!tts) return null;
@@ -1484,16 +1495,14 @@ button:focus-visible, select:focus-visible { outline-color: var(--blue) }
   document.getElementById("home").onclick = () => { if (stack.length > 1) history.go(1 - stack.length) };
   // Voice picker: every English voice this browser has; the choice is remembered on this device.
   const vp = document.getElementById("voicePick");
-  // Joke voices and the old robotic ones (Eloquence) are left out of the menu.
-  const SKIP = /^(Albert|Bad News|Bahh|Bells|Boing|Bubbles|Cellos|Good News|Jester|Organ|Superstar|Trinoids|Whisper|Wobble|Zarvox|Grandma|Grandpa|Eddy|Flo|Reed|Rocko|Sandy|Shelley|Junior|Ralph|Fred|Kathy)\b/i;
   const region = v => ({ US: "US", GB: "UK", AU: "Australia", IE: "Ireland", IN: "India", ZA: "South Africa", CA: "Canada", NZ: "New Zealand" })[(v.lang.split(/[-_]/)[1] || "").toUpperCase()] || v.lang;
   function fillVoices() {
     const seen = new Set();
     const vs = enVoices().filter(v => !SKIP.test(v.name) && !seen.has(v.name + v.lang) && seen.add(v.name + v.lang))
-      .sort((a, b) => (isEnUS(b) - isEnUS(a)) || a.name.localeCompare(b.name));
+      .sort((a, b) => (isEnUS(b) - isEnUS(a)) || (voiceRank(b) - voiceRank(a)) || a.name.localeCompare(b.name));
     if (!vs.length) { vp.hidden = true; dropify(vp); return }
     const cur = voice();
-    vp.innerHTML = vs.map(v => `<option value="${esc(v.name)}"${cur && v.name === cur.name ? " selected" : ""}>Voice: ${esc(v.name)} · ${esc(region(v))}</option>`).join("");
+    vp.innerHTML = vs.map(v => `<option value="${esc(v.name)}"${cur && v.name === cur.name ? " selected" : ""}>${natural(v) ? "★ " : ""}Voice: ${esc(v.name)} · ${esc(region(v))}</option>`).join("");
     vp.hidden = false;
     dropify(vp);
   }
