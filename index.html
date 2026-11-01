@@ -1,0 +1,1520 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>MAI 630 Module 2</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800;900&display=swap">
+<style>
+/* Layout: a sticky navigation bar, then one view at a time (home → section → topic), big touch targets for a tablet. */
+:root {
+  /* One dark look on every browser (Kevin prefers it). */
+  --bg: #0B111C; --surface: #141C2B; --ink: #EEF1F6; --muted: #9AA4B6;
+  --navy: #22324F; --red: #FF5A6E; --line: #273249; --chip: #1D2738; --es: #B9C3D6;
+  --display: "Archivo", "Helvetica Neue", Arial, sans-serif;
+  --body: "Atkinson Hyperlegible", "Segoe UI", Verdana, sans-serif;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box }
+[hidden] { display: none !important }
+html, body { overscroll-behavior-x: none }
+body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--body); font-size: 17px; line-height: 1.45 }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--navy) }
+button { font: inherit; color: inherit; cursor: pointer }
+button:focus-visible, select:focus-visible { outline: 3px solid var(--red); outline-offset: 2px }
+
+.bar { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; color: #fff;
+  background: rgba(34, 50, 79, .82); -webkit-backdrop-filter: blur(18px) saturate(120%); backdrop-filter: blur(18px) saturate(120%);
+  padding-block: 6px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)) }
+/* the bar's rows line up with the page content below (main is 980px wide with 16px padding: 948px of content) */
+.bar-row { max-width: 948px; margin: 0 auto; display: flex; align-items: center; gap: 10px; flex-wrap: wrap }
+.navbtn { background: rgba(255,255,255,.12); border: 0; border-radius: 9px; padding: 6px 12px; font-size: 14px; font-weight: 700; color: #fff; min-height: 36px }
+.navbtn:hover { background: rgba(255,255,255,.22) }
+.crumb { flex: 1; min-width: 0; font-family: var(--display); font-weight: 600; font-size: 15px; letter-spacing: .02em; opacity: .9; white-space: nowrap; overflow: hidden; text-overflow: ellipsis }
+.opts { width: 100%; max-width: 948px; margin: 0 auto; padding-top: 6px; display: flex; gap: 6px; flex-wrap: wrap }
+/* the options row folds away; the arrow button in the top row opens it */
+.opts-wrap { display: grid; grid-template-rows: 0fr; transition: grid-template-rows .25s ease }
+.opts-wrap > .opts { min-height: 0; overflow: hidden }
+.opts-wrap.open { grid-template-rows: 1fr }
+.opts-wrap.open.shown > .opts { overflow: visible }  /* after it opens, the selector lists can float over the content */
+.optsBtn { display: inline-flex; align-items: center; justify-content: center; width: 36px; padding: 0 }
+.optsBtn .chev { width: 9px; height: 9px; border-right: 2px solid currentColor; border-bottom: 2px solid currentColor; transform: translateY(-2px) rotate(45deg); transition: transform .25s }
+.optsBtn[aria-expanded="true"] .chev { transform: translateY(2px) rotate(-135deg) }
+.toggle { background: transparent; border: 1.5px solid rgba(255,255,255,.35); color: #fff; border-radius: 999px; padding: 4px 12px; font-size: 13px; min-height: 32px }
+.toggle[aria-pressed="true"] { background: #fff; color: #0C1422; border-color: #fff; font-weight: 700 }
+.speed { background: transparent; color: #fff; border: 1.5px solid rgba(255,255,255,.35); border-radius: 999px; padding: 6px 12px; font: inherit; font-size: 14px; min-height: 38px }
+.speed option { color: var(--ink); background: var(--surface) }
+/* our own arrow, inside the rounded button (the browser's arrow sat on the edge) */
+.speed { -webkit-appearance: none; appearance: none; padding-right: 38px; max-width: 280px; text-overflow: ellipsis;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: right 16px center; background-size: 12px 8px }
+
+main { max-width: 980px; margin: 0 auto; padding-block: 22px 110px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)) }
+h1 { font-family: var(--display); font-weight: 800; font-size: clamp(26px, 4vw, 36px); line-height: 1.1; margin: 4px 0 6px; text-wrap: balance }
+.lead { color: var(--muted); margin: 0 0 20px; max-width: 62ch }
+.eyebrow { font-family: var(--display); font-weight: 600; font-size: 12px; letter-spacing: .14em; text-transform: uppercase; color: var(--red) }
+
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 14px }
+.tile { text-align: left; background: var(--surface); border: 1.5px solid var(--line); border-radius: 14px; padding: 18px; min-height: 108px;
+  display: flex; flex-direction: column; gap: 6px; justify-content: space-between; transition: transform .12s, border-color .12s }
+.tile:hover:not(:disabled) { border-color: var(--red); transform: translateY(-2px) }
+.tile:disabled { opacity: .5; cursor: default }
+.tile .t { font-family: var(--display); font-weight: 800; font-size: 21px; line-height: 1.15 }
+.tile .s { color: var(--muted); font-size: 15px }
+.tile .n { font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums }
+.tag { align-self: flex-start; font-size: 12px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; background: var(--chip); color: var(--muted); padding: 3px 9px; border-radius: 999px }
+.tile.big { min-height: 150px; border-width: 2px }
+.tile.big .t { font-size: 26px }
+
+.cards { display: grid; gap: 14px }
+.card { background: var(--surface); border: 1.5px solid var(--line); border-radius: 14px; padding: 18px; display: grid; gap: 10px; min-width: 0 }
+.ask { background: var(--chip); border-radius: 10px; padding: 10px 12px }
+.ask .lbl, .ans-lbl { font-size: 12px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--muted) }
+.ask .q { font-weight: 700; font-size: 18px }
+.ask .qes { color: var(--es); font-size: 15px }
+.en { font-size: 22px; line-height: 1.4; font-weight: 700 }
+.es { color: var(--es); font-size: 16px; border-left: 3px solid var(--red); padding-left: 10px }
+.pron { font-size: 15px; color: var(--muted) }
+.pron b { color: var(--ink) }
+.actions { display: flex; gap: 8px; flex-wrap: wrap }
+.act { border: 1.5px solid var(--line); background: var(--surface); border-radius: 10px; padding: 8px 14px; font-weight: 700; font-size: 15px; min-height: 44px }
+.act:hover { border-color: var(--red) }
+.act.play { background: var(--navy); color: #fff; border-color: var(--navy) }
+.play-all { margin: 4px 0 0 }
+.next-pop { position: fixed; z-index: 25; top: 50%; transform: translate(-50%, -50%); left: 50% }
+.np-card { background: var(--surface); border: 1.5px solid var(--red); border-radius: 18px; padding: 22px 26px; display: grid; justify-items: center; gap: 10px;
+  box-shadow: 0 18px 50px rgba(0,0,0,.5); animation: npIn .35s cubic-bezier(.2,.9,.3,1.3) both; min-width: 260px; text-align: center }
+@keyframes npIn { from { opacity: 0; transform: scale(.85) } to { opacity: 1; transform: scale(1) } }
+.np-t { color: var(--muted); font-size: 14px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase }
+.np-h { font-family: var(--display); font-weight: 800; font-size: 24px }
+.np-ring.run #npArc { animation: npArc 3s linear forwards }
+@keyframes npArc { to { stroke-dashoffset: 0 } }
+.np-b { display: flex; gap: 10px }
+/* karaoke: while a phrase is spoken, the words already said light up and the current one turns red */
+.en.karaoke .w { color: var(--muted); transition: color .12s }
+.en.karaoke .w.said { color: var(--ink) }
+.en.karaoke .w.cur { color: var(--red) }
+.card.heard { opacity: .5 }
+.card.heard.reading { opacity: 1 }
+.qbtn.now { color: var(--red); font-weight: 700; background: var(--chip) }
+.qbtn.heard { opacity: .45 }
+@media (prefers-reduced-motion: reduce) { .np-card { animation: none } }
+/* the topic title and "Leer todo" are part of the fixed bar, so they never move; the phrases slide underneath */
+#barTopic:empty { display: none }
+#barTopic { margin: 6px calc(-1 * max(16px, env(safe-area-inset-right, 0px))) -6px calc(-1 * max(16px, env(safe-area-inset-left, 0px)));
+  padding-inline: max(16px, env(safe-area-inset-left, 0px)) max(16px, env(safe-area-inset-right, 0px));
+  background: rgba(11, 17, 28, .72); border-bottom: 1.5px solid var(--line); color: var(--ink) }
+.topic-head { max-width: 948px; margin: 0 auto; padding-block: 14px 12px }
+.topic-head h1 { margin: 2px 0 4px }
+main.in-topic { padding-top: 14px }
+/* floating control while the whole topic is read aloud */
+.reader-bar { position: fixed; z-index: 16; left: 50%; transform: translateX(-50%); bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+  display: flex; flex-direction: column; gap: 6px; background: var(--red); color: #fff; border-radius: 22px; padding: 8px 10px 10px;
+  box-shadow: 0 6px 18px rgba(0,0,0,.35); max-width: calc(100% - 32px); white-space: nowrap }
+.reader-bar[hidden] { display: none }
+/* a small media player: back · play/pause · forward · phrase count · again · stop, with a track of the phrases below */
+.rb-row { display: flex; align-items: center; gap: 4px }
+.reader-bar button { display: inline-grid; place-items: center; background: transparent; color: #fff; border: 0; border-radius: 999px; width: 44px; height: 44px; padding: 0 }
+.reader-bar button:hover { background: rgba(0,0,0,.18) }
+.reader-bar #readerPlay { background: #fff; color: var(--red); width: 50px; height: 50px }
+.reader-bar #readerPlay svg { width: 22px; height: 22px }
+.reader-bar #readerStop { background: rgba(0,0,0,.25) }
+.reader-bar .rb-count { font-weight: 700; font-variant-numeric: tabular-nums; padding: 0 10px; min-width: 9.5em; text-align: center }
+.rb-track { display: flex; gap: 3px; padding: 0 6px }
+.rb-track button { flex: 1; width: auto; height: 14px; min-width: 6px; border-radius: 0; background: none; position: relative }
+.rb-track button::after { content: ""; position: absolute; left: 0; right: 0; top: 5px; height: 4px; border-radius: 2px; background: rgba(255,255,255,.35) }
+.rb-track button.done::after { background: rgba(255,255,255,.75) }
+.rb-track button.now::after { top: 4px; height: 6px }
+/* the current phrase fills with white as the voice says it */
+.rb-track button i { position: absolute; z-index: 1; left: 0; top: 4px; height: 6px; width: 0; border-radius: 3px; background: #fff; pointer-events: none }
+.rb-track button:not(.now) i { display: none }
+.rb-track button:hover { background: none }
+.rb-track button:hover::after { background: #fff }
+@media (max-width: 480px) { .rb-row { gap: 2px } .reader-bar .rb-count { min-width: 0; padding: 0 4px; font-size: 14px } .reader-bar button { width: 36px; height: 36px } .reader-bar #readerPlay { width: 44px; height: 44px } }
+/* Full screen: only the phrase being read, big, and the player */
+.stage { position: fixed; inset: 0; z-index: 45; background: var(--bg); color: var(--ink); display: flex; flex-direction: column;
+  padding: max(10px, env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) calc(124px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px)) }
+.stage[hidden] { display: none }
+.stage-top { display: flex; align-items: center; gap: 10px }
+.stage-title { flex: 1; min-width: 0; font-family: var(--display); font-weight: 600; font-size: 13px; letter-spacing: .12em; text-transform: uppercase; color: var(--red); white-space: nowrap; overflow: hidden; text-overflow: ellipsis }
+.stage-x { flex: none; display: grid; place-items: center; width: 44px; height: 44px; border: 0; border-radius: 999px; background: rgba(255,255,255,.1); color: #fff }
+.stage-x:hover { background: rgba(255,255,255,.2) }
+.stage-body { flex: 1; min-height: 0; overflow-y: auto; display: flex; flex-direction: column; width: 100%; max-width: 980px; margin: 0 auto; padding: 8px 0 }
+.stage-in { margin: auto 0; display: flex; flex-direction: column; gap: 14px }  /* centred, and still scrolls from the top when long */
+.stage-sit { color: var(--muted); font-size: clamp(15px, 2.4vh + 6px, 20px) }
+.stage .en { font-family: var(--display); font-weight: 800; font-size: clamp(24px, min(6.2vw, 8.5vh), 60px); line-height: 1.2; margin: 0; text-wrap: balance }
+.stage .pron { font-size: clamp(14px, 2.4vh + 4px, 19px) }
+.stage .es { font-size: clamp(16px, 2.6vh + 6px, 22px) }
+body.staged { overflow: hidden }
+body.staged .reader-bar { z-index: 46 }
+body.staged .next-pop { z-index: 47 }
+.play-all { display: flex; flex-wrap: wrap; gap: 8px; align-items: center }
+.topic-head .speed { border-color: var(--line); color: var(--ink); background-color: var(--surface) }
+.topic-head .toggle { border-color: var(--line); color: var(--ink) }
+.topic-head .toggle[aria-pressed="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink) }
+.card.reading { border-color: var(--red); box-shadow: 0 0 0 3px rgba(255,90,110,.25) }
+.act.stopping, .sel-say button.stopping { background: var(--red); color: #fff; border-color: var(--red) }
+.hidden-en { filter: blur(7px); user-select: none; cursor: pointer }
+.reveal-hint { font-size: 13px; color: var(--muted) }
+.next { margin-top: 22px; display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap }
+.next .act { font-size: 16px; padding: 12px 18px }
+.swipe-hint { position: fixed; top: 50%; left: calc(8px + env(safe-area-inset-left, 0px)); transform: translateY(-50%); width: 44px; height: 44px; border-radius: 50%;
+  background: var(--navy); color: #fff; font-size: 28px; font-weight: 700; display: grid; place-items: center; opacity: 0; pointer-events: none; z-index: 20 }
+.pull-hint { position: fixed; left: 50%; top: calc(70px + env(safe-area-inset-top, 0px)); transform: translateX(-50%); width: 44px; height: 44px; border-radius: 50%;
+  background: var(--red); color: #fff; font-size: 26px; font-weight: 700; display: grid; place-items: center; opacity: 0; pointer-events: none; z-index: 20 }
+.sel-say { position: fixed; z-index: 40; display: flex; gap: 4px; background: var(--navy); border-radius: 12px; padding: 4px; box-shadow: 0 6px 18px rgba(0,0,0,.3) }
+.sel-say button { background: transparent; border: 0; color: #fff; font-weight: 700; font-size: 15px; padding: 8px 12px; border-radius: 8px; min-height: 40px }
+.sel-say button:hover { background: rgba(255,255,255,.15) }
+/* In-page selector: the pill grows downward with depth and shows a plain list (no system pop-up) */
+.native-hidden { display: none !important }
+.drop { position: relative; display: inline-block; vertical-align: middle; font-size: 14px; z-index: 6; transition: transform .3s, width .25s ease }
+.drop.open { z-index: 30 }
+.drop-box { position: relative }
+.drop.open .drop-box { position: absolute; top: 0; left: 0; width: 100%; transform: translateY(-2px); transition: transform .3s }
+.drop.open.measuring .drop-box { width: max-content; min-width: 100% }
+.drop.open .drop-head { width: 100%; max-width: none; justify-content: space-between }
+.drop-head { display: inline-flex; align-items: center; gap: 10px; min-height: 32px; max-width: 280px; padding: 4px 14px; color: inherit; font: inherit; font-size: 13px;
+  background: transparent; border: 1.5px solid rgba(255,255,255,.35); border-radius: 19px; white-space: nowrap; transition: border-radius .25s, background .25s, box-shadow .3s }
+.drop-head span:first-child { overflow: hidden; text-overflow: ellipsis }
+.chev { flex: none; width: 7px; height: 7px; border-right: 2px solid currentColor; border-bottom: 2px solid currentColor; transform: translateY(-2px) rotate(45deg); transition: transform .3s }
+.drop.open .chev { transform: translateY(2px) rotate(225deg) }
+.drop.open .drop-head { background: #1B2740; border-radius: 16px 16px 0 0; border-bottom-color: transparent; box-shadow: 0 -2px 14px rgba(0,0,0,.25) }
+.drop-list { position: absolute; left: 0; top: 100%; width: 100%; display: grid; max-height: 0; overflow: hidden; opacity: 0; background: #1B2740;
+  border: 1.5px solid rgba(255,255,255,.35); border-top: 0; border-radius: 0 0 16px 16px; transition: max-height .4s cubic-bezier(.2,.9,.3,1.1), opacity .2s, box-shadow .3s; visibility: hidden }
+.drop.open .drop-list { position: static; max-height: 340px; overflow-y: auto; opacity: 1; visibility: visible; box-shadow: 0 16px 32px rgba(0,0,0,.45) }
+.drop-item { position: relative; text-align: left; white-space: nowrap; padding: 8px 18px 8px 32px; color: rgba(255,255,255,.72); font: inherit; font-size: 14px; background: transparent; border: 0 }
+.drop-item:hover, .drop-item:focus-visible { color: #fff; outline: none; text-decoration: underline; text-underline-offset: 3px }
+.drop-item.on { color: #fff; font-weight: 700 }
+.drop-item.on::before { content: "✓"; position: absolute; left: 13px }
+.drop-item:last-child { padding-bottom: 12px }
+@media (prefers-reduced-motion: reduce) { .drop, .drop-list, .chev, .drop-head { transition: none } }
+.note { margin-top: 26px; color: var(--muted); font-size: 14px }
+
+/* Topic row under the bar */
+.chips { max-width: 948px; margin: 6px auto 0; display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; padding-bottom: 2px }
+.chips::-webkit-scrollbar { display: none }
+.chip { flex: none; background: rgba(255,255,255,.1); border: 0; color: #fff; border-radius: 999px; padding: 6px 12px; font-size: 13px; font-weight: 700; min-height: 32px; white-space: nowrap }
+.chip[aria-current="true"] { background: #fff; color: #0C1422 }
+
+/* Floating "Temas" button and the topics panel */
+.fab { position: fixed; z-index: 15; right: calc(16px + env(safe-area-inset-right, 0px)); bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+  background: var(--red); color: #fff; border: 0; border-radius: 999px; padding: 14px 22px; font-weight: 700; font-size: 17px; min-height: 56px;
+  box-shadow: 0 6px 18px rgba(0,0,0,.25) }
+.sheet { position: fixed; inset: 0; z-index: 30; background: rgba(8,12,20,.55); display: flex; justify-content: flex-end }
+.sheet-body { width: min(440px, 100%); height: 100%; background: var(--bg); overflow-y: auto; overscroll-behavior: contain;
+  padding-block: calc(14px + env(safe-area-inset-top, 0px)) calc(24px + env(safe-area-inset-bottom, 0px));
+  padding-left: 16px; padding-right: max(16px, env(safe-area-inset-right, 0px)) }
+.sheet-head { display: flex; align-items: center; gap: 10px; margin-bottom: 12px }
+.sheet-head h2 { flex: 1; margin: 0; font-family: var(--display); font-weight: 800; font-size: 24px }
+.close { background: var(--chip); border: 0; border-radius: 10px; padding: 10px 16px; font-weight: 700; min-height: 44px }
+.search { width: 100%; font: inherit; font-size: 17px; padding: 12px 14px; border-radius: 12px; border: 1.5px solid var(--line); background: var(--surface); color: var(--ink); min-height: 50px }
+.search:focus { outline: 3px solid var(--red); outline-offset: 1px }
+.sheet h3 { font-family: var(--display); font-size: 13px; letter-spacing: .12em; text-transform: uppercase; color: var(--red); margin: 18px 0 8px }
+.tlist { display: grid; grid-template-columns: 1fr 1fr; gap: 8px }
+.tbtn { text-align: left; background: var(--surface); border: 1.5px solid var(--line); border-radius: 10px; padding: 10px 12px; font-weight: 700; font-size: 15px; min-height: 48px }
+.tbtn[aria-current="true"] { border-color: var(--red); color: var(--red) }
+.hits { display: grid; gap: 8px; margin-top: 12px }
+.hit { text-align: left; background: var(--surface); border: 1.5px solid var(--line); border-radius: 10px; padding: 10px 12px; display: grid; gap: 4px }
+.hit .where { font-size: 12px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--muted) }
+.hit .txt { font-weight: 700 }
+.hit .sub { color: var(--es); font-size: 14px }
+.hit mark { background: #FFE08A; color: #121A2B; border-radius: 3px }
+.empty { color: var(--muted); margin-top: 14px }
+.qlist { grid-column: 1 / -1; display: grid; gap: 4px; border-left: 3px solid var(--red); padding: 4px 0 4px 10px; margin-bottom: 4px }
+.qbtn { text-align: left; background: transparent; border: 0; border-radius: 8px; padding: 8px 10px; font-size: 14px; line-height: 1.3; color: var(--ink); min-height: 40px }
+.qbtn:hover { background: var(--chip) }
+
+/* Assistant chat on the left (only where the page can ask Claude) */
+.fab-chat { position: fixed; z-index: 15; left: calc(16px + env(safe-area-inset-left, 0px)); bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+  background: var(--navy); color: #fff; border: 0; border-radius: 999px; padding: 14px 22px; font-weight: 700; font-size: 17px; min-height: 56px;
+  box-shadow: 0 6px 18px rgba(0,0,0,.25) }
+.fab:hover, .fab-chat:hover { filter: brightness(1.15) }
+.chat { position: fixed; inset: 0; z-index: 30; background: rgba(8,12,20,.55); display: flex; justify-content: flex-start }
+.chat-body { width: min(420px, 100%); height: 100%; background: var(--bg); display: flex; flex-direction: column; border-right: 1.5px solid var(--line);
+  padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); padding-left: env(safe-area-inset-left, 0px) }
+.chat-head { display: flex; align-items: center; gap: 8px; padding: 12px 14px; border-bottom: 1.5px solid var(--line) }
+.chat-head h2 { flex: 1; margin: 0; font-family: var(--display); font-weight: 800; font-size: 22px }
+.pin[aria-pressed="true"] { background: var(--navy); color: #fff }
+.msgs { flex: 1; overflow-y: auto; overscroll-behavior: contain; padding: 14px; display: flex; flex-direction: column; gap: 12px }
+.msg-me { align-self: flex-end; max-width: 85%; background: var(--navy); color: #fff; border-radius: 14px 14px 4px 14px; padding: 10px 14px; font-size: 16px }
+.msg-bot { background: var(--surface); border: 1.5px solid var(--line); border-radius: 14px; padding: 14px; display: grid; gap: 8px }
+.msg-bot .qen { font-size: 14px; color: var(--muted) }
+.msg-bot .aen { font-size: 20px; font-weight: 700; line-height: 1.4 }
+.msg-bot.err { color: var(--muted) }
+.thinking { color: var(--muted); font-style: italic }
+.hello { color: var(--muted); font-size: 15px; display: grid; gap: 8px }
+.hello .ex { text-align: left; background: var(--chip); border: 0; border-radius: 10px; padding: 8px 12px; font-size: 15px; min-height: 40px }
+.composer { display: flex; gap: 8px; padding: 12px 14px; border-top: 1.5px solid var(--line); align-items: flex-end }
+.composer textarea { flex: 1; min-width: 0; resize: none; line-height: 1.35; overflow-y: auto; font: inherit; font-size: 17px; padding: 10px 12px; border-radius: 12px; border: 1.5px solid var(--line);
+  background: var(--surface); color: var(--ink); min-height: 50px; max-height: 140px }
+.composer textarea:focus { outline: 3px solid var(--red); outline-offset: 1px }
+.send { background: var(--red); color: #fff; border: 0; border-radius: 12px; padding: 0 18px; font-weight: 700; min-height: 50px }
+.send.stop { background: var(--muted) }
+.send:hover { filter: brightness(1.12) }
+body.chatdock { padding-left: 400px }
+body.chatdock .chat { inset: 0 auto 0 0; width: 400px; background: transparent; z-index: 12 }
+body.chatdock .chat-body { width: 100% }
+
+/* Docked: the topics menu stays open on the right, the page uses the rest of the width */
+body.docked { padding-right: 340px }
+body.docked .sheet { inset: 0 0 0 auto; width: 340px; background: transparent; z-index: 12 }
+body.docked .sheet-body { width: 100%; border-left: 1.5px solid var(--line) }
+.card.flash { animation: flash 1.6s ease-out }
+@keyframes flash { 0%, 40% { border-color: var(--red); box-shadow: 0 0 0 4px rgba(192,18,42,.25) } 100% { border-color: var(--line); box-shadow: none } }
+@media (prefers-reduced-motion: reduce) { .tile { transition: none } .tile:hover:not(:disabled) { transform: none } .card.flash { animation: none; border-color: var(--red) } }
+
+/* ===== MAI 630 PE look: dark slate, lime-green 3D buttons, sky-blue secondary, round heavy type ===== */
+:root {
+  --bg: #131F24; --surface: #1B2A31; --ink: #F1F7FB; --muted: #8DA2AC;
+  --line: #37464F; --chip: #22343C; --es: #BFD0D8;
+  --red: #93D333;                    /* the accent everywhere (it was red): lime green */
+  --green: #93D333; --green-d: #79B933; --on-green: #131F24;
+  --blue: #49C0F8; --blue-d: #1899D6; --on-blue: #0E1A1F;
+  --danger: #FF4B4B; --danger-d: #D93A3A;
+  --gold: #FFC800;
+  --navy: #1CB0F6;
+  --display: "Nunito", "Arial Rounded MT Bold", "Helvetica Neue", Arial, sans-serif;
+  --body: "Nunito", "Segoe UI", Verdana, sans-serif;
+}
+body { font-weight: 600 }
+body::before { background: var(--bg) }
+h1, .tile .t, .np-h, .sheet-head h2, .chat-head h2 { font-weight: 900; letter-spacing: -.01em }
+.eyebrow, .sheet h3, .stage-title { color: var(--green); font-weight: 900 }
+
+/* 3D buttons: a 2px border plus a solid 2px drop below; pressing pushes them down */
+.navbtn, .toggle, .drop-head, .act, .chip, .tbtn, .close, .tile, .hello .ex, .send, .fab, .fab-chat, .stage-x, .hit {
+  border: 2px solid var(--line); box-shadow: 0 2px 0 var(--line); transition: transform .08s, box-shadow .08s, background .15s, border-color .15s }
+.navbtn:active, .toggle:active, .drop-head:active, .act:active, .chip:active, .tbtn:active, .close:active, .tile:active:not(:disabled),
+.hello .ex:active, .send:active, .fab:active, .fab-chat:active, .stage-x:active, .hit:active { transform: translateY(2px); box-shadow: none }
+
+/* top bar */
+.bar { background: rgba(19, 31, 36, .9); border-bottom: 2px solid var(--line) }
+.navbtn { background: transparent; color: var(--blue); border-radius: 14px; text-transform: uppercase; letter-spacing: .06em; font-weight: 900; font-size: 13px }
+.navbtn:hover { background: var(--chip) }
+.crumb { font-weight: 800 }
+.toggle, .topic-head .toggle { background: transparent; color: var(--ink); border-radius: 12px; font-weight: 800 }
+.toggle[aria-pressed="true"], .topic-head .toggle[aria-pressed="true"] { background: rgba(73, 192, 248, .14); color: var(--blue); border-color: var(--blue-d); box-shadow: 0 2px 0 var(--blue-d) }
+.drop-head { border-radius: 12px; font-weight: 800; background: transparent }
+.drop.open .drop-head { background: var(--surface); border-color: var(--line); border-radius: 12px 12px 0 0; box-shadow: none }
+.drop-list { background: var(--surface); border: 2px solid var(--line); border-top: 0; border-radius: 0 0 12px 12px }
+.drop-item { color: var(--muted); font-weight: 700 }
+.drop-item.on { color: var(--blue) }
+.drop-item:hover, .drop-item:focus-visible { color: var(--ink) }
+#barTopic { background: rgba(19, 31, 36, .9); border-bottom: 2px solid var(--line) }
+.chip { background: transparent; color: var(--ink); border-radius: 12px; font-weight: 800 }
+.chip[aria-current="true"] { background: rgba(73, 192, 248, .14); color: var(--blue); border-color: var(--blue-d); box-shadow: 0 2px 0 var(--blue-d) }
+
+/* home tiles and phrase cards */
+.tile { border-radius: 18px; background: var(--bg) }
+.tile:hover:not(:disabled) { border-color: var(--line); background: var(--surface); transform: none }
+.tile .s, .tile .n { font-weight: 600 }
+.tag { background: rgba(147, 211, 51, .14); color: var(--green); font-weight: 900 }
+.card { border: 2px solid var(--line); border-radius: 18px; box-shadow: 0 2px 0 var(--line); background: var(--bg) }
+.ask { background: var(--surface); border-radius: 14px }
+.ask .lbl, .ans-lbl { color: var(--muted); font-weight: 900 }
+.en { font-weight: 800 }
+.es { border-left-color: var(--blue) }
+.card.reading { border-color: var(--green); box-shadow: 0 2px 0 var(--green-d), 0 0 0 3px rgba(147, 211, 51, .18) }
+@keyframes flash { 0%, 40% { border-color: var(--green); box-shadow: 0 0 0 4px rgba(147, 211, 51, .25) } 100% { border-color: var(--line); box-shadow: 0 2px 0 var(--line) } }
+
+/* buttons: Listen is the green primary, the rest are outlined blue-text secondaries */
+.act { background: transparent; color: var(--blue); border-radius: 14px; text-transform: uppercase; letter-spacing: .05em; font-weight: 900; font-size: 14px }
+.act:hover { border-color: var(--line); background: var(--chip) }
+.act.play { background: var(--green); color: var(--on-green); border-color: var(--green); box-shadow: 0 4px 0 var(--green-d) }
+.act.play:hover { background: #A5E04A; border-color: #A5E04A }
+.act.play:active { transform: translateY(4px); box-shadow: none }
+.act.stopping, .sel-say button.stopping { background: var(--danger); color: #fff; border-color: var(--danger); box-shadow: 0 4px 0 var(--danger-d) }
+.act.stopping:hover, .sel-say button.stopping:hover { background: #FF6B6B; border-color: #FF6B6B; color: #fff }  /* hover: a lighter red, never the green */
+.act.stopping:active { transform: translateY(4px); box-shadow: none }
+.next .act.play { box-shadow: 0 4px 0 var(--green-d) }
+
+/* "next topic" window */
+.np-card { border: 2px solid var(--line); border-radius: 20px; box-shadow: 0 4px 0 var(--line), 0 18px 50px rgba(0,0,0,.5) }
+
+/* the player: a slate footer with a green play button and a thick progress track */
+.reader-bar { background: var(--surface); color: var(--ink); border: 2px solid var(--line); border-radius: 22px; box-shadow: 0 4px 0 var(--line), 0 10px 30px rgba(0,0,0,.45) }
+.reader-bar button { color: var(--ink) }
+.reader-bar button:hover { background: var(--chip) }
+.reader-bar #readerPlay { background: var(--green); color: var(--on-green); box-shadow: 0 4px 0 var(--green-d) }
+.reader-bar #readerPlay:active { transform: translateY(4px); box-shadow: none }
+.reader-bar #readerStop { background: transparent; color: var(--danger) }
+.reader-bar .rb-count { color: var(--green); text-transform: uppercase; letter-spacing: .06em; font-weight: 900; font-size: 14px }
+.rb-track { gap: 4px }
+.rb-track button { height: 18px }
+.rb-track button::after { top: 4px; height: 10px; border-radius: 6px; background: var(--line) }
+.rb-track button.done::after { background: var(--green) }
+.rb-track button.now::after { top: 4px; height: 10px; background: var(--line) }
+.rb-track button i { top: 4px; height: 10px; border-radius: 6px; background: var(--green); box-shadow: inset 0 3px 0 rgba(255, 255, 255, .28) }
+.rb-track button:hover::after { background: #4A5C66 }
+
+/* full screen */
+.stage { background: var(--bg) }
+.stage-x { background: transparent; color: var(--muted); border-radius: 14px }
+.en.karaoke .w.cur { color: var(--green) }
+
+/* floating buttons, menu, search, assistant */
+.fab { background: var(--green); color: var(--on-green); border-color: var(--green); box-shadow: 0 4px 0 var(--green-d); text-transform: uppercase; letter-spacing: .05em; font-weight: 900; border-radius: 16px }
+.fab:active { transform: translateY(4px); box-shadow: none }
+.fab-chat { background: var(--blue); color: var(--on-blue); border-color: var(--blue); box-shadow: 0 4px 0 var(--blue-d); text-transform: uppercase; letter-spacing: .05em; font-weight: 900; border-radius: 16px }
+.fab-chat:active { transform: translateY(4px); box-shadow: none }
+.fab-chat:hover { background: #7DD3FB; border-color: #7DD3FB }  /* hover: a lighter sky blue */
+.fab:hover { background: #A5E04A; border-color: #A5E04A }
+.fab:hover, .fab-chat:hover { filter: none }
+.close { background: transparent; color: var(--blue); border-radius: 14px; text-transform: uppercase; font-weight: 900; font-size: 13px }
+.tbtn { background: var(--bg); border-radius: 14px; font-weight: 800 }
+.tbtn[aria-current="true"] { border-color: var(--blue-d); color: var(--blue); background: rgba(73, 192, 248, .1); box-shadow: 0 2px 0 var(--blue-d) }
+.qlist { border-left-color: var(--line) }
+.qbtn { font-weight: 700 }
+.qbtn.now { color: var(--green); background: var(--surface) }
+.search, .composer textarea { border: 2px solid var(--line); border-radius: 14px; background: var(--surface); font-weight: 600 }
+.search:focus, .composer textarea:focus { outline: none; border-color: var(--blue) }
+.hit { background: var(--bg); border-radius: 14px }
+.hit mark { background: var(--gold); color: #131F24 }
+.msg-me { background: var(--blue); color: var(--on-blue); font-weight: 700 }
+.msg-bot { border: 2px solid var(--line); border-radius: 16px; background: var(--bg) }
+.hello .ex { background: transparent; border-radius: 14px; font-weight: 700 }
+.send { background: var(--green); color: var(--on-green); border-color: var(--green); box-shadow: 0 4px 0 var(--green-d); border-radius: 14px; text-transform: uppercase; font-weight: 900 }
+.send.stop { background: var(--muted); border-color: var(--muted); box-shadow: 0 4px 0 var(--line) }
+.send:hover { background: #A5E04A; border-color: #A5E04A }  /* hover: lighter lime, like Listen */
+.send.stop:hover { background: #A3B5BD; border-color: #A3B5BD }
+.send:hover { filter: none }
+.send:active { transform: translateY(4px); box-shadow: none }
+.pin[aria-pressed="true"] { background: rgba(73, 192, 248, .14); color: var(--blue); border-color: var(--blue-d) }
+.sel-say { background: var(--surface); border: 2px solid var(--line) }
+.sel-say button { color: var(--blue); font-weight: 900 }
+.swipe-hint { background: var(--blue); color: var(--on-blue) }
+.pull-hint { background: var(--green); color: var(--on-green) }
+.hidden-en { filter: blur(8px) }
+button:focus-visible, select:focus-visible { outline-color: var(--blue) }
+/* hover: the same lighter slate as the topic tiles; a chosen (blue) option just gets a little more blue */
+.toggle:hover, .topic-head .toggle:hover, .drop-head:hover, .tbtn:hover, .hit:hover, .close:hover, .hello .ex:hover, .stage-x:hover { background: var(--surface) }
+.toggle[aria-pressed="true"]:hover, .topic-head .toggle[aria-pressed="true"]:hover, .tbtn[aria-current="true"]:hover { background: rgba(73, 192, 248, .22) }
+@media (prefers-reduced-motion: reduce) { .navbtn, .toggle, .act, .chip, .tbtn, .tile, .fab, .fab-chat { transition: none } }
+
+/* ===== Module 2 page ===== */
+.tlist { grid-template-columns: 1fr }
+.sec-h { width: 100%; display: flex; justify-content: space-between; align-items: center; gap: 10px; text-align: left; background: none; border: 0; border-top: 2px solid var(--line); padding: 12px 2px; font-family: var(--display); font-weight: 900; font-size: 14px; color: var(--ink) }
+.sec-h:hover { color: var(--green) }
+.sec-h[aria-expanded="true"] { color: var(--green) }
+.sec-h[aria-expanded="true"] .chev { transform: translateY(2px) rotate(225deg) }
+.sec-h + .tlist { margin-bottom: 12px }
+.qbtn { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; min-height: 0; padding-block: 0; margin-block: 7px; border-radius: 4px }
+.ok { color: var(--green); font-weight: 900 }
+.card > .tag { justify-self: start }
+.tag-blue { background: rgba(73, 192, 248, .14); color: var(--blue) }
+.progress-card { background: var(--bg); border: 2px solid var(--line); box-shadow: 0 2px 0 var(--line); border-radius: 18px; padding: 16px 18px; display: grid; gap: 10px }
+.progress-card .n { color: var(--muted); font-size: 14px }
+.progress-row { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap }
+.pbar { height: 16px; border-radius: 8px; background: var(--line); overflow: hidden }
+.pbar i { display: block; height: 100%; border-radius: 8px; background: var(--green); box-shadow: inset 0 4px 0 rgba(255, 255, 255, .28); transition: width .4s }
+.time-info { color: var(--muted); font-size: 14px; font-weight: 700 }
+.time-big { font-family: var(--display); font-weight: 900; font-size: 40px; line-height: 1; color: var(--green); font-variant-numeric: tabular-nums }
+.toggle.timing, .topic-head .toggle.timing { background: var(--danger); border-color: var(--danger); color: #fff; box-shadow: 0 2px 0 var(--danger-d); font-variant-numeric: tabular-nums }
+.act.clock { font-variant-numeric: tabular-nums }
+.actions { align-items: center }
+.time-list { margin-top: 18px; display: grid; gap: 6px }
+.time-row { display: flex; justify-content: space-between; gap: 14px; text-align: left; background: var(--bg); border: 2px solid var(--line); border-radius: 12px; padding: 9px 12px; font-size: 15px; font-weight: 700 }
+.time-row:hover { background: var(--surface) }
+.time-val { flex: none; color: var(--muted); font-weight: 600; font-variant-numeric: tabular-nums }
+.time-val b { color: var(--ink) }
+.num-card { justify-items: center; text-align: center; padding: 30px 18px; gap: 16px }
+.num-count { color: var(--green); font-weight: 900; font-size: 14px; letter-spacing: .06em; text-transform: uppercase }
+.num-fig { font-family: var(--display); font-weight: 900; font-size: clamp(40px, 9vw, 76px); line-height: 1.1; overflow-wrap: anywhere }
+.num-word { font-size: clamp(20px, 3.4vw, 28px); font-weight: 800; color: var(--blue); min-height: 1.4em }
+.act:disabled { opacity: .4; cursor: default }
+</style>
+</head>
+<body>
+<header class="bar">
+  <div class="bar-row">
+    <button class="navbtn" id="back" type="button">‹ Back</button>
+    <div class="crumb" id="crumb">Inicio</div>
+    <button class="navbtn optsBtn" id="optsBtn" type="button" aria-expanded="false" aria-controls="optsWrap" aria-label="Options" title="Options"><span class="chev" aria-hidden="true"></span></button>
+    <button class="navbtn" id="home" type="button">Home</button>
+  </div>
+  <div class="opts-wrap" id="optsWrap"><div class="opts" inert>
+    <button class="toggle" id="optPractice" type="button" aria-pressed="false">Practice mode</button>
+    <button class="toggle" id="optPron" type="button" aria-pressed="true">Pronunciation</button>
+    <select class="speed" id="speed" aria-label="Velocidad de la voz">
+      <option value="0.7">Slow voice</option>
+      <option value="0.85" selected>Normal voice</option>
+      <option value="1">Fast voice</option>
+    </select>
+    <select class="speed" id="voicePick" aria-label="Voz" hidden></select>
+  </div></div>
+  <div id="barTopic"></div>
+</header>
+<main id="view"></main>
+<div class="swipe-hint" id="swipeHint" aria-hidden="true">‹</div>
+<div class="pull-hint" id="pullHint" aria-hidden="true">↻</div>
+<div class="next-pop" id="nextPop" role="dialog" aria-live="polite" hidden>
+  <div class="np-card">
+    <span class="np-t">Next</span>
+    <span class="np-h" id="npTitle"></span>
+    <svg class="np-ring" width="76" height="76" viewBox="0 0 76 76" aria-hidden="true"><circle cx="38" cy="38" r="30" fill="none" stroke="var(--line)" stroke-width="6"/><circle id="npArc" cx="38" cy="38" r="30" fill="none" stroke="var(--red)" stroke-width="6" stroke-linecap="round" transform="rotate(-90 38 38)" stroke-dasharray="188.5" stroke-dashoffset="188.5"/><text x="38" y="46" text-anchor="middle" font-size="26" font-weight="700" fill="var(--ink)">›</text></svg>
+    <div class="np-b"><button type="button" class="act" id="npCancel">Cancel</button><button type="button" class="act play" id="npGo">Go now ›</button></div>
+  </div>
+</div>
+<div class="reader-bar" id="readerBar" role="group" aria-label="Reading controls" hidden>
+  <div class="rb-row">
+    <button type="button" id="readerPrev" aria-label="Previous phrase" title="Previous (←)"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="19 20 9 12 19 4 19 20" fill="currentColor"/><line x1="5" x2="5" y1="19" y2="5"/></svg></button>
+    <button type="button" id="readerPlay" aria-label="Pause" title="Pause (space)"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="14" y="4" width="4" height="16" rx="1"/><rect x="6" y="4" width="4" height="16" rx="1"/></svg></button>
+    <button type="button" id="readerNext" aria-label="Next phrase" title="Next (→)"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="5 4 15 12 5 20 5 4" fill="currentColor"/><line x1="19" x2="19" y1="5" y2="19"/></svg></button>
+    <span class="rb-count" id="readerCount"></span>
+    <button type="button" id="readerAgain" aria-label="Say this phrase again" title="Again"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg></button>
+    <button type="button" id="readerFull" aria-label="Full screen" title="Full screen"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" x2="14" y1="3" y2="10"/><line x1="3" x2="10" y1="21" y2="14"/></svg></button>
+    <button type="button" id="readerStop" aria-label="Stop reading" title="Stop (Esc)"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="14" height="14" x="5" y="5" rx="2"/></svg></button>
+  </div>
+  <div class="rb-track" id="readerTrack"></div>
+</div>
+<div class="stage" id="stage" role="dialog" aria-label="Full screen" hidden>
+  <div class="stage-top"><div class="stage-title" id="stageTitle"></div><button type="button" class="stage-x" id="stageExit" aria-label="Exit full screen" title="Exit full screen (Esc)"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button></div>
+  <div class="stage-body" id="stageBody"></div>
+</div>
+<div class="sel-say" id="selSay" hidden><button type="button" data-rate="">🔊 Listen</button><button type="button" data-rate="0.6">Slow</button></div>
+<button class="fab" id="fab" type="button" aria-haspopup="dialog">☰ Topics</button>
+<div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-label="Temas y buscador" hidden>
+  <div class="sheet-body">
+    <div class="sheet-head"><h2>Temas</h2><button class="close" id="closeSheet" type="button">Cerrar</button></div>
+    <input class="search" id="q" type="search" placeholder="Buscar: stride, YOLO, CLAUDE.md…" autocomplete="off" aria-label="Buscar frases">
+    <div id="sheetList"></div>
+  </div>
+</div>
+
+<script src="data.js"></script>
+<script>
+(() => {
+  const S = window.SECTIONS || [];
+  const view = document.getElementById("view");
+  const crumb = document.getElementById("crumb");
+  const store = {
+    get(k, d) { try { const v = localStorage.getItem("m2_" + k); return v === null ? d : JSON.parse(v) } catch (e) { return d } },
+    set(k, v) { try { localStorage.setItem("m2_" + k, JSON.stringify(v)) } catch (e) {} }
+  };
+  const opts = { repeat: store.get("repeat", "1"), echo: store.get("echo", false), voice: store.get("voice", ""), es: false, practice: store.get("practice", false), pron: store.get("pron", true), speed: store.get("speed", "0.85") };
+  let stack = [];  // navigation history: [{v:'home'}, {v:'section', s}, {v:'topic', s, t}]
+  const tts = "speechSynthesis" in window;
+
+  const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+  const pronHtml = p => esc(p).replace(/([^·(]+)\(([^)]+)\)/g, (m, w, r) => `<b>${w.trim()}</b> (${r})`);
+
+
+  // Spanish-style pronunciation for hard words (CAPITALS = strong syllable); shown when a phrase has no hand-written help.
+  const PRON = [["ResNet","RÉS-net"],["ReLU","RÉ-lu"],["softmax","SÓFT-maks"],["stride","STRÁID"],["padding","PÁ-ding"],["pooling","PÚ-ling"],["receptive","ri-SÉP-tiv"],
+    ["ImageNet","Í-mich-net"],["AlexNet","Á-leks-net"],["Ultralytics","ul-tra-LÍ-tiks"],["Kaggle","KÁ-gol"],["hierarchy","JÁI-e-rar-ki"],["epochs","É-poks"],["epoch","É-pok"],
+    ["parameters","pa-RÁ-me-ters"],["parameter","pa-RÁ-me-ter"],["architecture","ÁR-ki-tek-cher"],["augmentation","og-men-TÉI-shon"],["suppression","su-PRÉ-shon"],
+    ["backbone","BÁK-boun"],["leatherback","LÉ-der-bak"],["turtle","TÉR-tol"],["COCO","KÓU-kou"],["PASCAL","pas-KÁL"],["subagents","SÁB-ei-yents"],["validation","va-li-DÉI-shon"],
+    ["Pythagorean","pi-za-go-RÍ-an"],["convolutional","kon-vo-LÚ-sho-nal"],["convolution","kon-vo-LÚ-shon"],
+    ["thresholding","ZRÉSH-joul-ding"],["thresholds","ZRÉSH-joulds"],["threshold","ZRÉSH-jould"],["potholes","PÓT-jouls"],["pothole","PÓT-joul"],
+    ["pixels","PÍK-sels"],["pixel","PÍK-sel"],["kernels","KÉR-nels"],["kernel","KÉR-nel"],["Gaussian","GÁU-si-an"],["Laplacian","la-PLÉI-si-an"],
+    ["Sobel","SÓU-bel"],["Canny","KÁ-ni"],["Otsu","ÓT-su"],["histogram","JÍS-to-gram"],["derivative","de-RÍ-va-tiv"],["magnitude","MÁG-ni-tud"],
+    ["matrix","MÉI-triks"],["algorithm","ÁL-go-ri-dem"],["neural","NIÚ-ral"],["asphalt","ÁS-folt"],["gravel","GRÁ-vel"],
+    ["neighbors","NÉI-bors"],["average","Á-vrich"],["brightness","BRÁIT-nes"],["weight","UÉIT"],["height","JÁIT"],["width","UÍDZ"],
+    ["alpha","ÁL-fa"],["beta","BÉI-ta"],["uint8","iú-int-ÉIT"],["occlusion","o-KLÚ-shon"],["environment","en-VÁI-ron-ment"],
+    ["requirements","ri-KUÁIR-ments"],["repository","ri-PÓ-si-to-ri"],["specification","spe-si-fi-KÉI-shon"],["Jupyter","YÚ-pi-ter"],
+    ["PyTorch","PÁI-torch"],["NumPy","NÁM-pai"],["OpenCV","óu-pen-si-VÍ"],["GitHub","GUÍT-jab"],["Colab","KÓU-lab"],["Gx","yi-ÉKS"],["Gy","yi-UÁI"],
+    ["microphone","MÁI-kro-foun"],["headphones","JÉD-founs"],["echo","É-kou"],["frozen","FRÓU-sen"],["disconnected","dis-ko-NÉK-ted"],
+    ["screen","SKRÍN"],["through","ZRÚ"],["thirteen","zer-TÍN"],["assignment","a-SÁIN-ment"],["assignments","a-SÁIN-ments"],
+    ["collaborator","ko-LÁ-bo-rei-tor"],["annotation","a-no-TÉI-shon"],["dataset","DÉI-ta-set"],["YOLO","YÓU-lou"],["Gradio","GRÉI-dio"],
+    ["greyscale","GRÉI-skeil"],["grey","GRÉI"],["notebook","NÓUT-buk"],["terminal","TÉR-mi-nal"],["whole","JÓUL"],["module","MÓ-diul"]];
+  const pronCache = new Map();
+  function autoPron(en) {
+    if (!en) return "";
+    if (pronCache.has(en)) return pronCache.get(en);
+    const seen = new Set(), out = [];
+    for (const [w, p] of PRON) {
+      const base = w.toLowerCase().replace(/s$/, "");
+      if (seen.has(base)) continue;
+      if (new RegExp(`(^|[^\\w])${w.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}(?![\\w])`, "i").test(en)) { out.push(`${w} (${p})`); seen.add(base) }
+      if (out.length >= 3) break;
+    }
+    const r = out.join(" · "); pronCache.set(en, r); return r;
+  }
+
+  // English voices only. Safari writes the language as "en_US", other browsers as "en-US".
+  const isEnUS = v => /^en[-_]US/i.test(v.lang);
+  const enVoices = () => (tts ? speechSynthesis.getVoices() : []).filter(v => /^en[-_]/i.test(v.lang));
+  const PREFERRED = [/Samantha.*(Premium|Enhanced|Mejorada)/i, /Ava.*(Premium|Enhanced)/i, /Zoe.*(Premium|Enhanced)/i, /Aria.*Natural/i, /Jenny.*Natural/i,
+    /Google US English/i, /^Samantha/i, /Aria|Jenny/i, /Nicky/i];
+  function bestVoice() {
+    const vs = enVoices();
+    for (const rx of PREFERRED) { const v = vs.find(x => isEnUS(x) && rx.test(x.name)); if (v) return v }
+    return vs.find(isEnUS) || vs[0] || null;
+  }
+  function voice() {
+    if (!tts) return null;
+    const chosen = opts.voice && enVoices().find(v => v.name === opts.voice);
+    return chosen || bestVoice();
+  }
+  // "Leer todo el tema": reads every phrase in order, scrolling each one into view and marking it.
+  let reading = null;
+  const PLAY_ICON = '<svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="6 3 20 12 6 21 6 3"/></svg>', PAUSE_ICON = '<svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="14" y="4" width="4" height="16" rx="1"/><rect x="6" y="4" width="4" height="16" rx="1"/></svg>';
+  // What the voice says: the text without the figures in parentheses and without the "1." that starts a paragraph,
+  // with file names read aloud ("src/cnn.py" -> "source slash C N N dot pie"). disp() maps a place in the speech back to the text on screen.
+  const SPOKEN = window.SPOKEN || {};
+  const SP_KEYS = Object.keys(SPOKEN).sort((a, b) => b.length - a.length).map(k => k.replace(/[.*+?^${}()|[\]\\\/]/g, "\\$&")).join("|");
+  const SP_RX = new RegExp(`^\\d+\\.\\s+|\\s*\\([^()]*\\d[^()]*\\)|(^|[\\s"'(])(${SP_KEYS})(?=$|[\\s"',.;:?!)])`, "g");
+  const spCache = new Map();
+  function speechOf(text) {
+    if (spCache.has(text)) return spCache.get(text);
+    let say = "", last = 0, m;
+    const marks = [];
+    const copy = (a, b) => { if (b > a) { marks.push({ at: say.length, d: a }); say += text.slice(a, b) } };
+    SP_RX.lastIndex = 0;
+    while ((m = SP_RX.exec(text))) {
+      const pre = (m[1] || "").length;
+      copy(last, m.index + pre);
+      if (m[2] !== undefined) { marks.push({ at: say.length, d: m.index + pre, fixed: true }); say += SPOKEN[m[2]] }
+      last = m.index + m[0].length;
+      if (!m[0]) SP_RX.lastIndex++;
+    }
+    copy(last, text.length);
+    const disp = i => { let b = marks[0] || { at: 0, d: 0 }; for (const k of marks) { if (k.at <= i) b = k; else break } return b.fixed ? b.d : b.d + (i - b.at) };
+    const out = { say, disp };
+    spCache.set(text, out);
+    return out;
+  }
+  // Voices from the internet (Google's) go silent after about 15 seconds, so long paragraphs are given to them sentence by sentence.
+  function chunksOf(spoken, from, v) {
+    const rest = spoken.slice(from);
+    if (!v || v.localService !== false || rest.length < 200) return [{ at: from, text: rest }];
+    const out = [];
+    let at = from;
+    for (const piece of rest.match(/[^.?!]+[.?!]*\s*/g) || [rest]) {
+      const prev = out[out.length - 1];
+      if (prev && prev.text.length + piece.length < 200) prev.text += piece;
+      else out.push({ at, text: piece });
+      at += piece.length;
+    }
+    return out;
+  }
+  // Says a text from a place in it. h: dead() stop waiting, start() first sound, chunk(at) a piece begins, word(i) a word begins, end() all said.
+  function speakSeq(spoken, from, rate, h) {
+    const v = voice(), parts = chunksOf(spoken, from, v);
+    let k = 0, first = true;
+    const next = () => {
+      if (h.dead()) return;
+      if (k >= parts.length) { h.end(); return }
+      const c = parts[k++];
+      const u = new SpeechSynthesisUtterance(c.text);
+      if (v) u.voice = v;
+      u.lang = "en-US"; u.rate = rate;
+      u.onstart = () => { if (first) { first = false; h.start() } h.chunk(c.at) };
+      u.onboundary = e => { if (!e.name || e.name === "word") h.word(c.at + e.charIndex) };
+      u.onend = next;
+      u.onerror = next;
+      // Right after a cut (↻, ⏮, ⏭, the track) the browser may drop a phrase given at once; wait a moment, then speak.
+      const wait = k === 1 ? cutAt + 150 - performance.now() : 0;
+      if (wait > 0) setTimeout(() => { if (!h.dead()) speechSynthesis.speak(u) }, wait);
+      else speechSynthesis.speak(u);
+    };
+    next();
+  }
+  // Karaoke on a card's text: words light up as the voice says them (only voices that report words do this).
+  function karaoke(card, text, from = 0) {
+    const els = [card && card.querySelector(".en"), card && card.classList.contains("reading") && staged() ? document.querySelector("#stageBody .en") : null]
+      .filter(el => el && el.textContent === text);
+    if (!els.length) return null;
+    const sp = speechOf(text), words = [];
+    els.forEach(el => {
+      let pos = 0;
+      el.innerHTML = text.split(/(\s+)/).map(part => { const start = pos; pos += part.length; return /\S/.test(part) ? `<span class="w" data-s="${start}">${esc(part)}</span>` : part }).join("");
+      words.push(...el.querySelectorAll(".w"));
+      if (from) el.classList.add("karaoke");
+    });
+    if (from) words.forEach(w => w.classList.toggle("said", +w.dataset.s < sp.disp(from)));  // going on after a pause
+    return {
+      mark(i) {
+        const d = sp.disp(i);
+        els.forEach(el => el.classList.add("karaoke"));
+        words.forEach(w => { w.classList.toggle("said", +w.dataset.s <= d); w.classList.remove("cur") });
+        els.forEach(el => { const said = el.querySelectorAll(".w.said"); if (said.length) said[said.length - 1].classList.add("cur") });
+      },
+      undo() { els.forEach(el => el.classList.remove("karaoke")); words.forEach(w => w.classList.remove("said", "cur")) }
+    };
+  }
+  function panelMark(i, cls) {
+    const b = document.querySelector(`#sheetList [data-card="${i}"]`);
+    if (!b) return;
+    if (cls === "now") {
+      document.querySelectorAll("#sheetList .qbtn.now").forEach(x => x.classList.remove("now"));
+      const body = sheet.querySelector(".sheet-body"), br = b.getBoundingClientRect(), pr = body.getBoundingClientRect();
+      if (br.top < pr.top + 60 || br.bottom > pr.bottom - 60) body.scrollTop += br.top - pr.top - pr.height / 3;
+    }
+    if (cls === "heard") b.classList.remove("now");
+    b.classList.add(cls);
+  }
+  function markHeard(card, i) { if (card) card.classList.add("heard"); panelMark(i, "heard") }
+
+  // When a whole topic was read: a small window counts 3 seconds with a ring, then opens and reads the next topic.
+  let nextTimer = null;
+  // Keyboard Enter while the window shows = go now (caught first, so a focused "Detener" button never gets it); Esc = cancel.
+  window.addEventListener("keydown", e => {
+    const pop = document.getElementById("nextPop");
+    if (pop.hidden) return;
+    if (e.key === "Enter") { e.preventDefault(); e.stopPropagation(); document.getElementById("npGo").click() }
+    else if (e.key === "Escape") { e.preventDefault(); e.stopPropagation(); document.getElementById("npCancel").click() }
+  }, true);
+  function hideNext() { clearTimeout(nextTimer); nextTimer = null; document.getElementById("nextPop").hidden = true }
+  // The next topic in this section, or else the first topic of the next section (Reunión 1:1 → Problemas técnicos → …).
+  function nextTopic(sid, idx) {
+    const si = S.findIndex(x => x.id === sid);
+    if (S[si].topics[idx + 1]) return { sid, idx: idx + 1, topic: S[si].topics[idx + 1], newSection: false };
+    for (let k = si + 1; k < S.length; k++) if (S[k].group === S[si].group && S[k].topics.length) return { sid: S[k].id, idx: 0, topic: S[k].topics[0], newSection: true };
+    return null;
+  }
+  function prevTopic(sid, idx) {
+    const si = S.findIndex(x => x.id === sid);
+    if (idx > 0) return { sid, topic: S[si].topics[idx - 1] };
+    for (let k = si - 1; k >= 0; k--) if (S[k].group === S[si].group && S[k].topics.length) return { sid: S[k].id, topic: S[k].topics[S[k].topics.length - 1] };
+    return null;
+  }
+  function offerNext(sid, idx, run) {
+    const nx = nextTopic(sid, idx);
+    if (!nx) { stopReading(); return }
+    const nxt = nx.topic;
+    const pop = document.getElementById("nextPop"), ring = pop.querySelector(".np-ring");
+    document.getElementById("npTitle").textContent = nx.newSection ? `${S.find(x => x.id === nx.sid).title} › ${nxt.title}` : nxt.title;
+    const r = view.getBoundingClientRect();
+    pop.style.left = (r.left + r.width / 2) + "px";
+    pop.hidden = false;
+    ring.classList.remove("run"); void ring.getBoundingClientRect(); ring.classList.add("run");
+    try { window.focus(); document.getElementById("npGo").focus({ preventScroll: true }) } catch (e) {}
+    const go = () => {
+      hideNext();
+      if (reading !== run) return;
+      if (nx.newSection && stack.length >= 2) stack[stack.length - 2] = { v: "section", s: nx.sid };
+      stack[stack.length - 1] = { v: "topic", s: nx.sid, t: nxt.id }; history.replaceState({ depth: stack.length }, ""); render();
+      const pa = document.getElementById("playAll");
+      if (pa) startReading(nxt.items, pa, nx.sid, nx.idx);
+    };
+    nextTimer = setTimeout(go, 3000);
+    document.getElementById("npGo").onclick = go;
+    document.getElementById("npCancel").onclick = () => { hideNext(); stopReading() };
+  }
+
+  function stopReading() {
+    hideNext();
+    if (!reading) return;
+    const r = reading; reading = null;
+    clearTimeout(r.timer); cancelAnimationFrame(fillRaf);
+    if (r.undo) r.undo();
+    speechSynthesis.cancel();
+    r.btn.innerHTML = "▶ Read all"; r.btn.classList.remove("stopping");
+    document.getElementById("readerBar").hidden = true;
+    view.style.paddingBottom = "";
+    view.querySelectorAll(".card.reading").forEach(c => c.classList.remove("reading"));
+    if (staged()) exitStage();
+  }
+  function readingAnchor() {
+    return document.querySelector(".bar").getBoundingClientRect().bottom + parseFloat(getComputedStyle(view).paddingTop || 0);
+  }
+  const repeats = () => opts.repeat === "inf" ? Infinity : parseInt(opts.repeat, 10) || 1;
+  // Pause after a phrase: in echo mode as long as the phrase itself, so you can say it back.
+  const pauseAfter = ms => opts.echo ? Math.max(1200, ms + 400) : 700;
+
+  function startReading(items, btn, sid, idx, start = 0, paused = false) {
+    view.style.paddingBottom = window.innerHeight + "px";  // room so the last phrases can also reach the reading place
+    speechSynthesis.cancel(); resetBtn();
+    reading = { btn, sid, idx, items, i: 0, timer: null, gen: 0, undo: null, paused, total: repeats() };
+    document.getElementById("readerTrack").innerHTML = items.map((_, k) => `<button type="button" data-k="${k}" aria-label="Phrase ${k + 1}"><i></i></button>`).join("");
+    setPlayIcon(paused);
+    view.querySelectorAll(".card.heard").forEach(c => c.classList.remove("heard"));
+    btn.innerHTML = "■ Stop reading"; btn.classList.add("stopping");
+    document.getElementById("readerBar").hidden = false;
+    readAt(start, items, reading, 1);
+  }
+  function readAt(i, items, run, rep, from = 0) {
+    if (reading !== run) return;
+    run.i = i; run.rep = rep; run.timer = null; run.resume = null;
+    const gen = ++run.gen;
+    const cards = view.querySelectorAll(".card");
+    if (rep === 1 && !from) view.querySelectorAll(".card.reading").forEach(c => c.classList.remove("reading"));
+    if (i >= items.length || !cards[i]) { if (S.find(x => x.id === run.sid).group === "slides") setPracticed(S.find(x => x.id === run.sid).topics[run.idx].id, true); offerNext(run.sid, run.idx, run); return }
+    cards[i].classList.add("reading"); cards[i].classList.remove("heard");
+    panelMark(i, "now");
+    if (!from) stageShow();
+    document.getElementById("readerCount").textContent =
+      (innerWidth <= 480 ? `${i + 1}/${items.length}` : `${S.find(x => x.id === run.sid).group === "slides" ? "Paragraph" : "Phrase"} ${i + 1} of ${items.length}`) + (run.total > 1 ? ` · ${rep}/${run.total === Infinity ? "∞" : run.total}` : "");
+    document.querySelectorAll("#readerTrack button").forEach((b, k) => { b.classList.toggle("now", k === i); b.classList.toggle("done", k < i) });
+    const text = items[i].en, spoken = speechOf(text).say;
+    cancelAnimationFrame(fillRaf); setFill(from / (spoken.length || 1));
+    if (rep === 1 && !from) {
+      // Each phrase takes the exact place of the first one: right under the fixed topic title, measured live on this screen.
+      // The previous card scrolls up behind the blurred header.
+      const target = Math.round(window.scrollY + cards[i].getBoundingClientRect().top - readingAnchor());
+      window.scrollTo({ top: target, behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
+      setTimeout(() => { if (reading !== run) return; const off = cards[i].getBoundingClientRect().top - readingAnchor(); if (Math.abs(off) > 1) window.scrollBy(0, off) }, 650);  // measure again and correct (smooth scroll skipped, or the bar changed height)
+    }
+    if (run.paused) return;  // paused: the phrase waits in its place until Play
+    // after a pause the voice says only the rest of the phrase, from the word where it stopped
+    const rate = parseFloat(opts.speed);
+    const k = karaoke(cards[i], text, from);
+    run.undo = k && k.undo;
+    run.from = from; run.pos = from; run.heardWord = false; run.t0 = null; run.said = 0; run.est = estMs(spoken.slice(from), rate);
+    runFill(spoken, run, gen);
+    let started = 0;
+    speakSeq(spoken, from, rate, {
+      dead: () => reading !== run || run.gen !== gen,  // stopped, paused, or a player button already moved on
+      start: () => { started = performance.now() },
+      chunk: at => { run.from = at; run.t0 = performance.now(); run.est = estMs(spoken.slice(at), rate); run.heardWord = false },
+      word: j => { run.pos = j; run.heardWord = true; run.said = Math.max(run.said, j / spoken.length); if (k) k.mark(j) },
+      end: () => {
+        if (k) k.undo();
+        cancelAnimationFrame(fillRaf); setFill(1);
+        const last = rep >= run.total;
+        if (last) markHeard(cards[i], i);
+        run.after = last ? { i: i + 1, rep: 1 } : { i, rep: rep + 1 };
+        run.timer = setTimeout(() => readAt(run.after.i, items, run, run.after.rep), pauseAfter(started ? performance.now() - started : 1500));
+      }
+    });
+  }
+  // The player in the red bar. Back, forward, the track and ↻ cut the current phrase and start phrase j from its beginning.
+  function readJump(j) {
+    const run = reading;
+    if (!run) return;
+    hideNext();
+    run.gen++;  // the cut phrase's end handler sees this and does nothing
+    clearTimeout(run.timer); run.timer = null;
+    speechSynthesis.cancel(); cutAt = performance.now();
+    if (run.undo) { run.undo(); run.undo = null }
+    const cards = view.querySelectorAll(".card");
+    if (j > run.i) for (let k = run.i; k < j; k++) markHeard(cards[k], k);
+    if (run.paused && j >= run.items.length) j = run.items.length - 1;
+    readAt(Math.max(0, j), run.items, run, 1);
+  }
+  // How much of the phrase is said: the time spent against an estimate from its words and the speed,
+  // pushed forward by the word the voice reports (when it does); it holds just short of the end until the voice finishes.
+  let fillRaf = 0, cutAt = -1e9;  // cutAt: when a player button last cut the voice
+  function setFill(p) { const el = document.querySelector("#readerTrack .now i"); if (el) el.style.width = (p * 100).toFixed(1) + "%" }
+  const estMs = (txt, rate) => Math.max(600, txt.split(/\s+/).length * 60000 / (165 * (rate || 1)));
+  function runFill(spoken, run, gen) {
+    const tick = () => {
+      if (reading !== run || run.gen !== gen) return;
+      if (run.t0 !== null) { const base = run.from / spoken.length; setFill(Math.min(.97, Math.max(base + (performance.now() - run.t0) / run.est * (1 - base), run.said))) }
+      fillRaf = requestAnimationFrame(tick);
+    };
+    fillRaf = requestAnimationFrame(tick);
+  }
+  const readNext = () => reading && readJump(reading.i + 1);
+  const readPrev = () => reading && readJump(reading.i - 1);
+  function setPlayIcon(paused) {
+    const b = document.getElementById("readerPlay");
+    b.innerHTML = paused ? PLAY_ICON : PAUSE_ICON;
+    b.setAttribute("aria-label", paused ? "Play" : "Pause");
+    b.title = paused ? "Play (space)" : "Pause (space)";
+  }
+  // Where Play goes on: the word after the last one said. The voice reports each word it starts (most voices);
+  // if it doesn't, the place is worked out from the time spent, at the start of the word it was on.
+  function resumePoint(run) {
+    const text = speechOf(run.items[run.i].en).say;
+    let c;
+    if (run.heardWord) {
+      const nx = text.slice(run.pos).search(/\s\S/);
+      c = nx < 0 ? text.length : run.pos + nx + 1;
+    } else {
+      const p = run.t0 === null ? 0 : Math.min(1, (performance.now() - run.t0) / run.est);
+      c = run.from + Math.floor(p * (text.length - run.from));
+      while (c > run.from && /\S/.test(text[c - 1])) c--;  // back to the start of that word
+    }
+    if (c >= text.length) return run.rep >= run.total ? { i: run.i + 1, rep: 1, from: 0, heard: true } : { i: run.i, rep: run.rep + 1, from: 0 };
+    return { i: run.i, rep: run.rep, from: c };
+  }
+  // Pause stops the voice and keeps the place (the words already said stay lit); Play goes on from the next word.
+  // (The browsers' own pause is unreliable, so the voice is cut and the rest of the phrase is said again from there.)
+  function readToggle() {
+    const run = reading;
+    if (!run) return;
+    if (!run.paused) {
+      run.paused = true; setPlayIcon(true); hideNext();
+      if (run.timer) { clearTimeout(run.timer); run.timer = null; run.resume = { ...run.after, from: 0 } }  // between phrases
+      else { run.resume = resumePoint(run); run.gen++; speechSynthesis.cancel(); cutAt = performance.now(); cancelAnimationFrame(fillRaf) }
+      return;
+    }
+    run.paused = false; setPlayIcon(false);
+    const r = run.resume || { i: run.i, rep: 1, from: 0 };
+    run.resume = null;
+    if (r.heard) markHeard(view.querySelectorAll(".card")[r.i - 1], r.i - 1);
+    readAt(r.i, run.items, run, r.rep, r.from);
+  }
+
+  // Full screen: the phrase being read, big, with only the player and a button to leave.
+  // The Full screen button opens it; on a phone, turning it sideways opens it too (and turning it back closes it).
+  let stageAuto = false;
+  function staged() { return !document.getElementById("stage").hidden }
+  function stageShow() {
+    if (!staged() || !reading) return;
+    const it = reading.items[reading.i];
+    if (!it) return;
+    const s = S.find(x => x.id === reading.sid), t = s.topics[reading.idx];
+    document.getElementById("stageTitle").textContent = `${s.title} › ${t.title}`;
+    const sit = it.q || it.qes || "";
+    const pr = it.pron || (typeof autoPron === "function" ? autoPron(it.en) : "");
+    document.getElementById("stageBody").innerHTML = `<div class="stage-in">${sit ? `<div class="stage-sit">${esc(sit)}</div>` : ""}
+      <p class="en">${esc(it.en)}</p>
+      ${opts.pron && pr ? `<div class="pron">Pronunciación: ${pronHtml(pr)}</div>` : ""}
+      ${opts.es && it.es ? `<div class="es">${esc(it.es)}</div>` : ""}</div>`;
+  }
+  function enterStage(auto) {
+    const top = stack[stack.length - 1];
+    if (!tts || staged() || top.v !== "topic") return;
+    if (!reading) {
+      // not reading yet: start, paused, at the phrase now on screen; Play starts the voice
+      const s = S.find(x => x.id === top.s), idx = s.topics.findIndex(x => x.id === top.t);
+      const at = Math.max(0, [...view.querySelectorAll(".card")].findIndex(c => c.getBoundingClientRect().bottom > readingAnchor() + 40));
+      startReading(s.topics[idx].items, document.getElementById("playAll"), top.s, idx, at, true);
+    }
+    stageAuto = auto;
+    document.getElementById("stage").hidden = false;
+    document.body.classList.add("staged");
+    const b = document.getElementById("readerFull");
+    b.innerHTML = '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="4 14 10 14 10 20"/><polyline points="20 10 14 10 14 4"/><line x1="14" x2="21" y1="10" y2="3"/><line x1="3" x2="10" y1="21" y2="14"/></svg>'; b.setAttribute("aria-label", "Exit full screen"); b.title = "Exit full screen";
+    stageShow();
+    // a pressed button may also hide the browser's own bars (not every phone allows it)
+    if (!auto && document.documentElement.requestFullscreen) document.documentElement.requestFullscreen().catch(() => {});
+  }
+  function exitStage() {
+    if (!staged()) return;
+    document.getElementById("stage").hidden = true;
+    document.body.classList.remove("staged");
+    stageAuto = false;
+    const b = document.getElementById("readerFull");
+    b.innerHTML = '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" x2="14" y1="3" y2="10"/><line x1="3" x2="10" y1="21" y2="14"/></svg>'; b.setAttribute("aria-label", "Full screen"); b.title = "Full screen";
+    if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
+    const c = reading && view.querySelector(".card.reading");
+    if (c) placeCard(c);
+  }
+  document.addEventListener("fullscreenchange", () => { if (!document.fullscreenElement && staged() && !stageAuto) exitStage() });
+  const sideways = matchMedia("(orientation: landscape) and (max-height: 520px) and (pointer: coarse)");
+  const onTurn = () => { if (sideways.matches) enterStage(true); else if (stageAuto) exitStage() };
+  if (sideways.addEventListener) sideways.addEventListener("change", onTurn); else sideways.addListener(onTurn);
+  // in full screen, swipe left for the next phrase, right for the one before
+  let ss = null;
+  document.getElementById("stage").addEventListener("touchstart", e => { ss = e.touches.length === 1 ? { x: e.touches[0].clientX, y: e.touches[0].clientY } : null }, { passive: true });
+  document.getElementById("stage").addEventListener("touchend", e => {
+    if (!ss) return;
+    const t = e.changedTouches[0], dx = t.clientX - ss.x, dy = t.clientY - ss.y;
+    ss = null;
+    if (Math.abs(dx) > 70 && Math.abs(dx) > Math.abs(dy) * 1.5) dx < 0 ? readNext() : readPrev();
+  });
+
+  // The button that started the voice turns into "■ Detener" until the phrase ends; pressing it again stops.
+  let speakingBtn = null;
+  function resetBtn() {
+    if (speakingBtn) clearTimeout(speakingBtn.__t);
+    if (speakingBtn) { speakingBtn.innerHTML = speakingBtn.dataset.label; speakingBtn.classList.remove("stopping"); speakingBtn = null; view.querySelectorAll(".en.karaoke").forEach(e => { e.classList.remove("karaoke"); e.querySelectorAll(".w").forEach(w => w.classList.remove("said", "cur")) }) }
+  }
+  function say(text, rate, btn, onDone) {
+    if (!tts) return;
+    stopReading();
+    const same = btn && btn === speakingBtn;
+    speechSynthesis.cancel(); resetBtn();
+    if (same) return;  // second press = stop
+    const total = btn ? repeats() : 1;
+    const card = btn ? btn.closest(".card") : null;
+    const i = card ? [...view.querySelectorAll(".card")].indexOf(card) : -1;
+    if (btn) { btn.dataset.label = btn.innerHTML; btn.innerHTML = "■ Stop"; btn.classList.add("stopping"); speakingBtn = btn }
+    const once = n => {
+      if (btn && speakingBtn !== btn) return;
+      const r = rate || parseFloat(opts.speed), spoken = speechOf(text).say;
+      if (!btn) { const u = new SpeechSynthesisUtterance(spoken); const v = voice(); if (v) u.voice = v; u.lang = "en-US"; u.rate = r; speechSynthesis.speak(u); return }
+      const k = card ? karaoke(card, text) : null;
+      if (k) panelMark(i, "now");
+      if (total > 1) btn.innerHTML = `■ Stop · ${n}/${total === Infinity ? "∞" : total}`;
+      let started = 0;
+      speakSeq(spoken, 0, r, {
+        dead: () => speakingBtn !== btn,
+        start: () => { started = performance.now() },
+        chunk: () => {},
+        word: j => { if (k) k.mark(j) },
+        end: () => {
+          if (k) k.undo();
+          if (onDone && started) onDone(performance.now() - started);
+          if (n < total) { btn.__t = setTimeout(() => once(n + 1), pauseAfter(started ? performance.now() - started : 1500)); return }
+          if (k) markHeard(card, i);
+          resetBtn();
+        }
+      });
+    };
+    once(1);
+  }
+
+
+  // Each view is a browser history entry, so the browser's own back gesture and button work too.
+  function go(state) { stack.push(state); history.pushState({ depth: stack.length }, ""); render() }
+  function back() { if (stack.length > 1) history.back() }
+  window.addEventListener("popstate", e => {
+    const depth = (e.state && e.state.depth) || 1;
+    if (depth < stack.length) { stack.length = depth; render() }
+  });
+
+  // Mac trackpad: a two-finger swipe to the right goes back one view (the browser's own swipe can't see these views inside an embedded page).
+  let wx = 0, wt = 0, wlock = 0;
+  window.addEventListener("wheel", e => {
+    if (Math.abs(e.deltaX) <= Math.abs(e.deltaY) || stack.length < 2 || staged()) return;
+    if (e.target.closest && e.target.closest(".chips, .msgs")) return;  // these scroll sideways on their own
+    e.preventDefault();
+    const now = Date.now();
+    if (now < wlock) return;
+    if (now - wt > 300) wx = 0;
+    wt = now; wx += e.deltaX;
+    const p = Math.max(0, Math.min(1, -wx / 140));
+    hint.style.opacity = p; hint.style.transform = `translateY(-50%) translateX(${p * 24}px)`;
+    clearTimeout(window.__wh); window.__wh = setTimeout(() => { hint.style.opacity = 0; hint.style.transform = "translateY(-50%)" }, 250);
+    if (wx < -140) { wx = 0; wlock = now + 800; back() }
+  }, { passive: false });
+
+  // Swipe left to right anywhere on the screen goes back one view.
+  const hint = document.getElementById("swipeHint");
+  const SWIPE = 110;  // pixels of horizontal travel needed
+  let sw = null;
+  document.addEventListener("touchstart", e => {
+    const t = e.touches[0];
+    const scrollable = e.target.closest && e.target.closest(".chips, .sheet, .chat, .stage, .reader-bar");  // these scroll sideways or have their own gestures
+    sw = (e.touches.length === 1 && stack.length > 1 && !scrollable) ? { x: t.clientX, y: t.clientY, dx: 0 } : null;
+  }, { passive: true });
+  document.addEventListener("touchmove", e => {
+    if (!sw) return;
+    const t = e.touches[0];
+    sw.dx = t.clientX - sw.x;
+    const dy = Math.abs(t.clientY - sw.y);
+    if (dy > 70 || (dy > 25 && dy > sw.dx)) { sw = null; hint.style.opacity = 0; return }  // a scroll, not a swipe
+    const p = Math.max(0, Math.min(1, sw.dx / SWIPE));
+    hint.style.opacity = p; hint.style.transform = `translateY(-50%) translateX(${p * 24}px)`;
+  }, { passive: true });
+  document.addEventListener("touchend", () => {
+    if (sw && sw.dx > SWIPE) back();
+    sw = null; hint.style.opacity = 0; hint.style.transform = "translateY(-50%)";
+  });
+
+  // Pull down from the top of the page to reload it.
+  const pull = document.getElementById("pullHint");
+  const PULL = 100;  // pixels to drag down
+  let pd = null;
+  document.addEventListener("touchstart", e => {
+    const inPanel = e.target.closest && e.target.closest(".sheet, .chat, .chips, .stage, .reader-bar");
+    pd = (e.touches.length === 1 && window.scrollY <= 0 && !inPanel) ? { y: e.touches[0].clientY, x: e.touches[0].clientX, dy: 0 } : null;
+  }, { passive: true });
+  document.addEventListener("touchmove", e => {
+    if (!pd) return;
+    const t = e.touches[0];
+    pd.dy = t.clientY - pd.y;
+    if (pd.dy < 0 || window.scrollY > 0 || Math.abs(t.clientX - pd.x) > pd.dy) { pd = null; pull.style.opacity = 0; return }
+    const p = Math.min(1, pd.dy / PULL);
+    pull.style.opacity = p;
+    pull.style.transform = `translateX(-50%) translateY(${p * 40}px) rotate(${p * 270}deg)`;
+    pull.textContent = "↻";
+  }, { passive: true });
+  document.addEventListener("touchend", () => {
+    if (pd && pd.dy > PULL) { pull.style.opacity = 1; location.reload(); return }
+    pd = null; pull.style.opacity = 0; pull.style.transform = "translateX(-50%)";
+  });
+
+  // Select a word or part of a sentence to hear only that.
+  const selSay = document.getElementById("selSay");
+  let selText = "";
+  function placeSelSay() {
+    const sel = window.getSelection();
+    const text = sel && !sel.isCollapsed ? sel.toString().trim() : "";
+    const node = text && sel.anchorNode && (sel.anchorNode.nodeType === 1 ? sel.anchorNode : sel.anchorNode.parentElement);
+    if (!text || !tts || text.length > 400 || (node && node.closest("textarea, input"))) { selSay.hidden = true; return }
+    selText = text;
+    const r = sel.getRangeAt(0).getBoundingClientRect();
+    selSay.hidden = false;
+    const w = selSay.offsetWidth, h = selSay.offsetHeight;
+    const below = r.bottom + 10 + h < window.innerHeight;  // below the text, clear of the phone's own menu above it
+    selSay.style.top = (below ? r.bottom + 10 : Math.max(8, r.top - h - 10)) + "px";
+    selSay.style.left = Math.max(8, Math.min(window.innerWidth - w - 8, r.left + r.width / 2 - w / 2)) + "px";
+  }
+  let selTimer;
+  document.addEventListener("selectionchange", () => { clearTimeout(selTimer); selTimer = setTimeout(placeSelSay, 250) });
+  window.addEventListener("scroll", () => { if (!selSay.hidden) placeSelSay() }, { passive: true });
+  selSay.addEventListener("pointerdown", e => e.preventDefault());  // keep the selection when the button is pressed
+  selSay.querySelectorAll("button").forEach(b => b.onclick = () => say(selText, b.dataset.rate ? parseFloat(b.dataset.rate) : null, b));
+
+  // Progress: the slides already practised and the last place, remembered on this device.
+  const slideTopics = () => S.filter(s => s.group === "slides").flatMap(s => s.topics.map(t => ({ s, t })));
+  let practiced = store.get("practiced", {});
+  function setPracticed(id, on) { if (on) practiced[id] = 1; else delete practiced[id]; store.set("practiced", practiced) }
+  const fmtTime = ms => { const t = Math.round(ms / 1000); return `${Math.floor(t / 60)}:${String(t % 60).padStart(2, "0")}` };
+  function renderHome() {
+    crumb.textContent = "MAI 630 · Module 2";
+    const all = slideTopics(), done = all.filter(x => practiced[x.t.id]).length, last = store.get("last", null);
+    const lastT = last && all.find(x => x.t.id === last.t);
+    const slides = cl => S.filter(s => s.group === "slides" && s.cl === cl);
+    view.innerHTML = `
+      <div class="eyebrow">Computer Vision · Module 2</div>
+      <h1>Practica tu presentación</h1>
+      <p class="lead">Tu speech de las 85 diapositivas, para leerlo en voz alta. Después, entrena los números, las partes difíciles y las frases típicas.</p>
+      <div class="progress-card">
+        <div class="progress-row"><b>${done} of ${all.length} slides practiced</b>${lastT ? `<button class="act play" id="contBtn" type="button">Continue · Slide ${lastT.t.n} ›</button>` : ""}</div>
+        <div class="pbar"><i style="width:${(done / all.length * 100).toFixed(1)}%"></i></div>
+      </div>
+      <h2 class="eyebrow" style="margin:28px 0 12px">Class 2.1</h2>
+      <div class="grid">${slides("2.1").map(tile).join("")}</div>
+      <h2 class="eyebrow" style="margin:28px 0 12px">Class 2.2</h2>
+      <div class="grid">${slides("2.2").map(tile).join("")}</div>
+      <h2 class="eyebrow" style="margin:28px 0 12px">Training</h2>
+      <div class="grid">${S.filter(s => s.group !== "slides").map(tile).join("")}
+        <button class="tile" type="button" id="timesTile"><span class="tag">Training</span><span class="t">Rehearsal time</span><span class="s">Cuánto dura tu presentación, slide por slide</span><span class="n">${Object.keys(store.get("times", {})).length} of ${all.length} slides timed</span></button></div>`;
+    view.querySelectorAll("[data-s]").forEach(b => b.onclick = () => go({ v: "section", s: b.dataset.s }));
+    document.getElementById("timesTile").onclick = () => go({ v: "times" });
+    const cb = document.getElementById("contBtn");
+    if (cb) cb.onclick = () => jumpTo(lastT.s.id, lastT.t.id);
+  }
+  function count(s) { return s.topics.reduce((a, t) => a + t.items.length, 0) }
+  function tile(s) {
+    const done = s.group === "slides" ? s.topics.filter(t => practiced[t.id]).length : 0;
+    return `<button class="tile" type="button" data-s="${s.id}">
+      <span class="tag">${esc(s.tag)}</span>
+      <span class="t">${esc(s.title)}</span>
+      <span class="s">${esc(s.sub)}</span>
+      <span class="n">${s.group === "slides" ? `${done} of ${s.topics.length} practiced` : `${count(s)} ${s.unit}`}</span></button>`;
+  }
+
+  function renderSection(sid) {
+    const s = S.find(x => x.id === sid);
+    crumb.textContent = s.title;
+    view.innerHTML = `
+      <div class="eyebrow">${esc(s.tag)}</div>
+      <h1>${esc(s.title)}</h1>
+      <p class="lead">${esc(s.sub)}.</p>
+      <div class="grid">${s.topics.map((t, i) => `
+        <button class="tile" type="button" data-t="${t.id}">
+          <span class="t">${practiced[t.id] ? '<span class="ok">✓</span> ' : ""}${esc(t.title)}</span>
+          <span class="n">${t.items.length} ${s.unit}</span></button>`).join("")}</div>`;
+    view.querySelectorAll("[data-t]").forEach(b => b.onclick = () => go({ v: "topic", s: sid, t: b.dataset.t }));
+  }
+
+  function renderTopic(sid, tid) {
+    const s = S.find(x => x.id === sid);
+    const idx = s.topics.findIndex(x => x.id === tid);
+    const t = s.topics[idx];
+    crumb.textContent = t.title;
+    if (s.group === "slides") store.set("last", { t: t.id });
+    document.getElementById("barTopic").innerHTML = `
+      <div class="topic-head">
+        <div class="eyebrow">${esc(s.title)}</div>
+        <h1>${esc(t.title)}</h1>
+        ${tts ? `<div class="actions play-all"><button class="act play" id="playAll" type="button">▶ Read all</button>
+          <select class="speed" id="repeatPick" aria-label="Repeat each phrase">${["1", "2", "3", "5", "inf"].map(v => `<option value="${v}"${opts.repeat === v ? " selected" : ""}>Repeat: ${v === "inf" ? "∞" : v + "×"}</option>`).join("")}</select>
+          <button class="toggle" id="echoBtn" type="button" aria-pressed="${opts.echo}" title="After each phrase, a pause as long as the phrase so you can repeat it"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" x2="12" y1="19" y2="22"/></svg> Echo mode</button>
+          <button class="toggle full-btn" id="fullBtn" type="button" title="Show the text big, with only the player"><svg viewBox="0 0 24 24" width="15" height="15" style="vertical-align:-2px" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" x2="14" y1="3" y2="10"/><line x1="3" x2="10" y1="21" y2="14"/></svg> Full screen</button>
+          ${s.group === "slides" ? `<button class="toggle" id="timeBtn" type="button" title="Read it yourself and see how long it takes">⏱ Time me</button>
+          <button class="toggle" id="doneBtn" type="button" aria-pressed="${!!practiced[t.id]}">✓ Practiced</button><span class="time-info" id="timeInfo"></span>` : ""}
+          ${t.kind === "numbers" ? `<button class="toggle" id="numBtn" type="button" aria-pressed="${numChallenge}" title="You see the figures, you say them, and then you hear them">Challenge</button>` : ""}</div>` : ""}
+      </div>`;
+    const nx = nextTopic(sid, idx), pv = prevTopic(sid, idx);
+    view.innerHTML = `
+      <div class="cards" id="cardsBox">${t.items.map((it, i) => card(it, i, t)).join("")}</div>
+      <div class="next">
+        ${pv ? `<button class="act" type="button" data-jump="${pv.sid}|${pv.topic.id}">‹ ${esc(pv.topic.title)}</button>` : "<span></span>"}
+        ${nx ? `<button class="act play" type="button" data-jump="${nx.sid}|${nx.topic.id}">${esc(nx.topic.title)} ›</button>` : ""}
+      </div>
+      ${tts ? "" : `<p class="note">Este navegador no tiene voz en inglés disponible: el botón Escuchar no aparece.</p>`}`;
+    view.querySelectorAll("[data-jump]").forEach(b => b.onclick = () => {
+      const [ns, nt] = b.dataset.jump.split("|");
+      if (stack.length >= 2) stack[stack.length - 2] = { v: "section", s: ns };
+      stack[stack.length - 1] = { v: "topic", s: ns, t: nt }; history.replaceState({ depth: stack.length }, ""); render();
+    });
+    const pa = document.getElementById("playAll");
+    if (pa) pa.onclick = () => { if (reading) stopReading(); else startReading(t.items, pa, sid, idx) };
+    const rp = document.getElementById("repeatPick"), eb = document.getElementById("echoBtn");
+    if (rp) rp.onchange = () => { opts.repeat = rp.value; store.set("repeat", rp.value); if (reading) reading.total = repeats() };
+    if (eb) eb.onclick = () => { opts.echo = !opts.echo; store.set("echo", opts.echo); eb.setAttribute("aria-pressed", String(opts.echo)) };
+    const fb = document.getElementById("fullBtn");
+    if (fb) fb.onclick = () => enterStage(false);
+    dropify(rp);
+    wireSay(t);
+    if (s.group === "slides") wireSlideTools(t);
+    if (t.kind === "hard") wireClocks(t);
+    if (t.kind === "numbers") {
+      const nb = document.getElementById("numBtn");
+      if (nb) nb.onclick = () => { numChallenge = !numChallenge; store.set("numCh", numChallenge); stopReading(); render() };
+      if (numChallenge) showNumChallenge(s, idx, t);
+    }
+    view.querySelectorAll(".hidden-en").forEach(el => el.onclick = () => { el.classList.remove("hidden-en"); const h = el.nextElementSibling; if (h && h.classList.contains("reveal-hint")) h.remove() });
+  }
+  function wireSay(t) {
+    view.querySelectorAll("[data-say]").forEach(b => b.onclick = () => {
+      const it = t.items[+b.dataset.say], fast = b.dataset.fast;
+      say(it.en, b.dataset.rate ? parseFloat(b.dataset.rate) : null, b, fast ? ms => { voiceFast[it.en] = ms; store.set("voiceFast", voiceFast); showBest(it, +b.dataset.say) } : null);
+    });
+  }
+  function card(it, i, t) {
+    const hide = opts.practice, pr = it.pron || autoPron(it.en);
+    return `<article class="card">
+      ${it.src ? `<span class="tag ${it.src === "Common phrase" ? "tag-blue" : ""}">${esc(it.src)}</span>` : ""}
+      <div class="en ${hide ? "hidden-en" : ""}">${esc(it.en)}</div>
+      ${hide ? `<div class="reveal-hint">Dila en inglés y toca el texto para comprobar.</div>` : ""}
+      ${opts.pron && pr ? `<div class="pron">Pronunciación: ${pronHtml(pr)}</div>` : ""}
+      ${!tts ? "" : t.kind === "hard" ? `<div class="actions"><button class="act" type="button" data-say="${i}" data-rate="0.7">▶ Slow</button><button class="act" type="button" data-say="${i}" data-rate="0.95">▶ Normal</button><button class="act play" type="button" data-say="${i}" data-rate="1.25" data-fast="1">▶ Fast</button>
+        <button class="act clock" type="button" data-clock="${i}">⏱ Start</button><span class="time-info" id="best${i}">${bestText(it)}</span></div>`
+        : `<div class="actions"><button class="act play" type="button" data-say="${i}">▶ Listen</button></div>`}
+    </article>`;
+  }
+
+  // Hard parts: read as fast as you can against the clock; the best time stays.
+  let bests = store.get("bests", {}), voiceFast = store.get("voiceFast", {}), clock = null;
+  const secs = ms => (ms / 1000).toFixed(1) + " s";
+  const bestText = it => [bests[it.en] ? `Best ${secs(bests[it.en])}` : "", voiceFast[it.en] ? `Fast voice ${secs(voiceFast[it.en])}` : ""].filter(Boolean).join(" · ");
+  function showBest(it, i) { const el = document.getElementById("best" + i); if (el) el.textContent = bestText(it) }
+  function stopClock(save) {
+    if (!clock) return;
+    clearInterval(clock.iv);
+    const ms = performance.now() - clock.t0, { b, it, i } = clock;
+    clock = null;
+    b.classList.remove("stopping"); b.textContent = "⏱ Start";
+    if (!save) return;
+    const best = !bests[it.en] || ms < bests[it.en];
+    if (best) { bests[it.en] = ms; store.set("bests", bests) }
+    const el = document.getElementById("best" + i);
+    const others = best ? (voiceFast[it.en] ? `Fast voice ${secs(voiceFast[it.en])}` : "") : bestText(it);
+    if (el) el.innerHTML = `<b class="${best ? "ok" : ""}">${secs(ms)}${best ? " · New best!" : ""}</b> ${esc(others)}`;
+  }
+  function wireClocks(t) {
+    view.querySelectorAll("[data-clock]").forEach(b => b.onclick = () => {
+      if (clock && clock.b === b) { stopClock(true); return }
+      stopClock(false); stopReading(); speechSynthesis.cancel(); resetBtn();
+      clock = { b, it: t.items[+b.dataset.clock], i: +b.dataset.clock, t0: performance.now() };
+      b.classList.add("stopping");
+      const show = () => { if (clock) b.textContent = "■ Stop " + secs(performance.now() - clock.t0) };
+      show(); clock.iv = setInterval(show, 100);
+    });
+  }
+
+  // Numbers challenge: the figures alone; you say them, then you see and hear the words.
+  let numChallenge = store.get("numCh", false);
+  function showNumChallenge(s, idx, t) {
+    let i = 0, open = false;
+    const box = document.getElementById("cardsBox"), nx = nextTopic(s.id, idx);
+    const draw = () => {
+      const it = t.items[i];
+      box.innerHTML = `<article class="card num-card">
+        <div class="num-count">${i + 1} of ${t.items.length}</div>
+        <div class="num-fig">${esc(it.d)}</div>
+        <div class="num-word">${open ? esc(it.w) : "Say it out loud"}</div>
+        <div class="actions" style="justify-content:center">
+          <button class="act" type="button" id="numPrev" ${i ? "" : "disabled"}>‹ Back</button>
+          ${open ? `<button class="act" type="button" id="numAgain">▶ Again</button>
+            ${i < t.items.length - 1 ? `<button class="act play" type="button" id="numNext">Next ›</button>` : nx ? `<button class="act play" type="button" data-jump2="1">${esc(nx.topic.title)} ›</button>` : `<span class="time-info"><b class="ok">All numbers done!</b></span>`}`
+            : `<button class="act play" type="button" id="numShow">Show and listen</button>`}
+        </div></article>`;
+      const $ = id => document.getElementById(id);
+      const move = d => { i += d; open = false; draw() };
+      if ($("numPrev")) $("numPrev").onclick = () => move(-1);
+      if ($("numNext")) { $("numNext").onclick = () => move(1); $("numNext").focus({ preventScroll: true }) }
+      if ($("numAgain")) $("numAgain").onclick = () => say(it.w);
+      if ($("numShow")) { $("numShow").onclick = () => { open = true; draw(); say(it.w) }; $("numShow").focus({ preventScroll: true }) }
+      const j = box.querySelector("[data-jump2]");
+      if (j) { j.onclick = () => { if (stack.length >= 2) stack[stack.length - 2] = { v: "section", s: nx.sid }; stack[stack.length - 1] = { v: "topic", s: nx.sid, t: nx.topic.id }; history.replaceState({ depth: stack.length }, ""); render() }; j.focus({ preventScroll: true }) }
+    };
+    draw();
+  }
+
+  // Rehearsal: a stopwatch per slide. While it runs, going to another slide saves this one and goes on timing the next.
+  let rehearse = null, rehIv = 0, times = store.get("times", {});
+  function saveRehearse() {
+    if (!rehearse) return;
+    const ms = performance.now() - rehearse.t0, rec = times[rehearse.id] || {};
+    if (ms > 1500) { rec.last = ms; rec.best = rec.best ? Math.min(rec.best, ms) : ms; times[rehearse.id] = rec; store.set("times", times) }
+  }
+  function stopRehearse() { saveRehearse(); rehearse = null; clearInterval(rehIv); rehIv = 0 }
+  function timeInfoText(id) { const r = times[id]; return r ? `Last ${fmtTime(r.last)} · Best ${fmtTime(r.best)}` : "" }
+  function wireSlideTools(t) {
+    const tb = document.getElementById("timeBtn"), db = document.getElementById("doneBtn"), info = document.getElementById("timeInfo");
+    const paint = () => {
+      if (rehearse && rehearse.id === t.id) { tb.textContent = "■ Stop " + fmtTime(performance.now() - rehearse.t0); tb.classList.add("timing") }
+      else { tb.textContent = "⏱ Time me"; tb.classList.remove("timing") }
+      info.textContent = timeInfoText(t.id);
+    };
+    if (rehearse && rehearse.id !== t.id) { saveRehearse(); rehearse = { id: t.id, t0: performance.now() } }
+    clearInterval(rehIv);
+    if (rehearse) rehIv = setInterval(() => { if (document.getElementById("timeBtn") === tb) paint() }, 500);
+    tb.onclick = () => {
+      if (rehearse) { stopRehearse(); setPracticed(t.id, true); db.setAttribute("aria-pressed", "true") }
+      else { rehearse = { id: t.id, t0: performance.now() }; rehIv = setInterval(paint, 500) }
+      paint();
+    };
+    db.onclick = () => { const on = !practiced[t.id]; setPracticed(t.id, on); db.setAttribute("aria-pressed", String(on)); if (!sheet.hidden) renderSheet() };
+    paint();
+  }
+  function renderTimes() {
+    crumb.textContent = "Rehearsal time";
+    const all = slideTopics();
+    const WPM = 130;  // an unhurried class pace, for the slides not timed yet
+    const est = t => t.w / WPM * 60000;
+    const sum = cl => {
+      const list = all.filter(x => x.s.cl === cl);
+      const timed = list.filter(x => times[x.t.id]);
+      return { n: list.length, timed: timed.length, ms: list.reduce((a, x) => a + (times[x.t.id] ? times[x.t.id].last : est(x.t)), 0) };
+    };
+    const box = cl => { const r = sum(cl); return `<div class="progress-card"><div class="time-big">${fmtTime(r.ms)}</div><b>Class ${cl}</b><div class="n">${r.timed} of ${r.n} slides timed${r.timed < r.n ? ", the rest estimated" : ""}</div></div>` };
+    view.innerHTML = `
+      <div class="eyebrow">Training</div>
+      <h1>Rehearsal time</h1>
+      <p class="lead">Abre un slide y toca ⏱ Time me. Mientras corre, cada slide que abras guarda su tiempo. Los que faltan se estiman a ${WPM} palabras por minuto.</p>
+      <div class="grid">${box("2.1")}${box("2.2")}</div>
+      <div class="time-list">${all.map(x => `<button class="time-row" type="button" data-go2="${x.s.id}|${x.t.id}">
+        <span>${practiced[x.t.id] ? '<span class="ok">✓</span> ' : ""}${esc(x.t.title)}</span>
+        <span class="time-val">${times[x.t.id] ? `<b>${fmtTime(times[x.t.id].last)}</b> · best ${fmtTime(times[x.t.id].best)}` : `~${fmtTime(est(x.t))}`}</span></button>`).join("")}</div>
+      <div class="actions" style="margin-top:18px"><button class="act" type="button" id="resetProg">Start over</button></div>`;
+    view.querySelectorAll("[data-go2]").forEach(b => b.onclick = () => { const [a, c] = b.dataset.go2.split("|"); jumpTo(a, c) });
+    document.getElementById("resetProg").onclick = () => {
+      if (!confirm("Erase the practiced slides and all the times?")) return;
+      practiced = {}; times = {}; store.set("practiced", practiced); store.set("times", times); render();
+    };
+  }
+
+  function render() {
+    if (tts) { hideNext(); reading = null; speechSynthesis.cancel(); speakingBtn = null; document.getElementById("readerBar").hidden = true; view.style.paddingBottom = "" }
+    if (staged() && stack[stack.length - 1].v !== "topic") exitStage();
+    const st = stack[stack.length - 1];
+    stopClock(false);
+    const stSec = st.v === "topic" && S.find(x => x.id === st.s);
+    if (rehearse && !(stSec && stSec.group === "slides")) stopRehearse();
+    document.getElementById("back").disabled = stack.length < 2;
+    document.getElementById("back").hidden = stack.length < 2;  // on the home page the title starts at the left edge
+    if (st.v === "home") renderHome();
+    else if (st.v === "section") renderSection(st.s);
+    else if (st.v === "times") renderTimes();
+    else renderTopic(st.s, st.t);
+    view.classList.toggle("in-topic", st.v === "topic");
+    if (st.v !== "topic") document.getElementById("barTopic").innerHTML = "";
+    setBarH();
+    if (!sheet.hidden) renderSheet();
+    window.scrollTo(0, 0);
+  }
+  // Put a chosen card in the reading place: right under the fixed topic title, measured live (same rule as "Leer todo").
+  let lastPlaced = null;  // { el, at }: the card just put in the reading place, re-aligned if the bar changes height right after
+  function placeCard(el) {
+    lastPlaced = { el, at: Date.now() };
+    view.style.paddingBottom = window.innerHeight + "px";  // room so the last cards can also reach that place
+    const target = Math.round(window.scrollY + el.getBoundingClientRect().top - readingAnchor());
+    window.scrollTo({ top: target, behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
+    // after the scroll, measure again (the bar can change height meanwhile) and correct to the exact place
+    setTimeout(() => { const off = el.getBoundingClientRect().top - readingAnchor(); if (Math.abs(off) > 1) window.scrollBy(0, off) }, 650);
+  }
+  function flashCard(i) {
+    const el = view.querySelectorAll(".card")[i];
+    if (el) { el.classList.remove("flash"); void el.offsetWidth; placeCard(el); el.classList.add("flash") }
+  }
+
+  // Jump straight to any topic (from the panel or the search), keeping Atrás → section → home.
+  function jumpTo(sid, tid, item) {
+    if (!docked()) sheet.hidden = true;
+    const d = stack.length;
+    if (d === 1) { history.pushState({ depth: 2 }, ""); history.pushState({ depth: 3 }, "") }
+    else if (d === 2) history.pushState({ depth: 3 }, "");
+    else history.replaceState({ depth: 3 }, "");
+    stack = [{ v: "home" }, { v: "section", s: sid }, { v: "topic", s: sid, t: tid }];
+    render();
+    if (item != null) flashCard(item);
+  }
+
+  // Topics menu with search. On a wide screen it stays docked on the right until you minimise it.
+  const sheet = document.getElementById("sheet"), q = document.getElementById("q"), list = document.getElementById("sheetList");
+  const fab = document.getElementById("fab"), closeBtn = document.getElementById("closeSheet");
+  const norm = s => String(s || "").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
+  const wide = () => window.innerWidth >= 700;
+  let dock = store.get("dock", true);
+  const docked = () => document.body.classList.contains("docked");
+  function applyDock() {
+    // With the assistant pinned on the left, the topics menu stays docked only on a very wide screen.
+    const on = dock && wide() && !(document.body.classList.contains("chatdock") && window.innerWidth < 1180);
+    document.body.classList.toggle("docked", on);
+    if (on) sheet.hidden = false;
+    else if (wide()) sheet.hidden = true;
+    sheet.setAttribute("aria-modal", String(!on));
+    fab.hidden = !sheet.hidden;
+    closeBtn.textContent = on ? "Minimizar ›" : "Cerrar";
+    if (!sheet.hidden) renderSheet();
+  }
+  function openSheet() {
+    if (wide()) { dock = true; store.set("dock", true); applyDock() }
+    else { sheet.hidden = false; fab.hidden = true; renderSheet() }
+  }
+  function closeSheet() {
+    if (docked()) { dock = false; store.set("dock", false); applyDock() }
+    else { sheet.hidden = true; fab.hidden = false }
+  }
+  let secOpen = null, lastSec = null;
+  function renderSheet() {
+    const term = norm(q.value.trim());
+    const cur = stack[stack.length - 1];
+    const isCur = (s, t) => cur.v === "topic" && cur.s === s.id && cur.t === t.id;
+    if (!term) {
+      const curSec = cur.v === "topic" ? cur.s : cur.v === "section" ? cur.s : null;
+      if (curSec && curSec !== lastSec) { secOpen = curSec; lastSec = curSec }
+      list.innerHTML = S.map(s => `<button class="sec-h" type="button" data-sec="${s.id}" aria-expanded="${secOpen === s.id}"><span>${s.cl ? `${s.cl} · ` : ""}${esc(s.title)}</span><span class="chev"></span></button>
+        ${secOpen === s.id ? `<div class="tlist">${s.topics.map(t =>
+        `<button class="tbtn" type="button" data-go="${s.id}|${t.id}" aria-current="${isCur(s, t)}">${practiced[t.id] ? '<span class="ok">✓</span> ' : ""}${esc(t.title)}</button>` +
+        (isCur(s, t) && t.kind !== "numbers" ? `<div class="qlist">${t.items.map((it, i) => `<button class="qbtn" type="button" data-card="${i}">${esc(it.en)}</button>`).join("")}</div>` : "")
+      ).join("")}</div>` : ""}`).join("");
+      list.querySelectorAll("[data-sec]").forEach(b => b.onclick = () => { secOpen = secOpen === b.dataset.sec ? null : b.dataset.sec; renderSheet() });
+      list.querySelectorAll("[data-card]").forEach(b => b.onclick = () => { if (!docked()) { sheet.hidden = true; fab.hidden = false } flashCard(+b.dataset.card) });
+      const curBtn = list.querySelector('.tbtn[aria-current="true"]');
+      if (curBtn) { const body = sheet.querySelector(".sheet-body"); body.scrollTop = Math.max(0, curBtn.offsetTop - 120) }
+    } else {
+      const hits = [];
+      S.filter(s => s.group !== "numbers").forEach(s => s.topics.forEach(t => t.items.forEach((it, i) => {
+        const hay = norm([it.en, it.es, it.q, it.qes, t.title].join(" "));
+        if (hay.includes(term)) hits.push({ s, t, it, i });
+      })));
+      const mark = txt => { const n = norm(txt), k = n.indexOf(term); return k < 0 ? esc(txt) : esc(txt.slice(0, k)) + "<mark>" + esc(txt.slice(k, k + term.length)) + "</mark>" + esc(txt.slice(k + term.length)) };
+      list.innerHTML = hits.length ? `<div class="hits">${hits.slice(0, 40).map(h => `
+        <button class="hit" type="button" data-go="${h.s.id}|${h.t.id}|${h.i}">
+          <span class="where">${esc(h.s.title)} › ${esc(h.t.title)}</span>
+          ${h.it.q || h.it.qes ? `<span class="sub">${mark(h.it.q || h.it.qes)}</span>` : ""}
+          <span class="txt">${mark(h.it.en)}</span>
+          ${opts.es && h.it.es ? `<span class="sub">${mark(h.it.es)}</span>` : ""}
+        </button>`).join("")}</div>${hits.length > 40 ? `<p class="empty">Mostrando 40 de ${hits.length}. Escribe algo más específico.</p>` : ""}`
+        : `<p class="empty">No hay frases con «${esc(q.value.trim())}». Prueba otra palabra.</p>`;
+    }
+    list.querySelectorAll("[data-go]").forEach(b => b.onclick = () => { const [sid, tid, i] = b.dataset.go.split("|"); jumpTo(sid, tid, i === undefined ? null : +i) });
+  }
+  fab.onclick = openSheet;
+  closeBtn.onclick = closeSheet;
+  sheet.addEventListener("click", e => { if (e.target === sheet && !docked()) closeSheet() });
+  document.addEventListener("keydown", e => { if (e.key === "Escape" && !sheet.hidden && !docked()) closeSheet() });
+  q.addEventListener("input", renderSheet);
+  window.addEventListener("resize", applyDock);
+
+  function setBarH() {
+    document.documentElement.style.setProperty("--barH", document.querySelector(".bar").offsetHeight + "px");
+    const target = reading ? view.querySelector(".card.reading") : (lastPlaced && Date.now() - lastPlaced.at < 4000 && lastPlaced.el.isConnected ? lastPlaced.el : null);
+    if (target) requestAnimationFrame(() => { const off = target.getBoundingClientRect().top - readingAnchor(); if (Math.abs(off) > 1) window.scrollBy(0, off) });
+  }
+  window.addEventListener("resize", setBarH);
+  if (window.ResizeObserver) new ResizeObserver(setBarH).observe(document.querySelector(".bar"));  // the bar grows when its rows wrap or fonts load
+  document.getElementById("readerStop").onclick = () => stopReading();
+  document.getElementById("readerNext").onclick = () => readNext();
+  document.getElementById("readerPrev").onclick = () => readPrev();
+  document.getElementById("readerFull").onclick = () => staged() ? exitStage() : enterStage(false);
+  document.getElementById("stageExit").onclick = () => exitStage();
+  document.getElementById("readerPlay").onclick = () => readToggle();
+  document.getElementById("readerAgain").onclick = () => reading && readJump(reading.i);
+  document.getElementById("readerTrack").onclick = e => { const b = e.target.closest("[data-k]"); if (b) readJump(+b.dataset.k) };
+  // Player keys while reading: space = play/pause, ← → = previous/next, Esc = stop (not while typing)
+  document.addEventListener("keydown", e => {
+    if (!reading || !document.getElementById("nextPop").hidden) return;
+    if (e.target.closest && e.target.closest("input, textarea, select, [contenteditable]")) return;
+    if (e.key === " ") { e.preventDefault(); readToggle() }
+    else if (e.key === "ArrowRight") { e.preventDefault(); readNext() }
+    else if (e.key === "ArrowLeft") { e.preventDefault(); readPrev() }
+    else if (e.key === "Escape") { if (staged()) exitStage(); else stopReading() }
+  }, true);
+  // a focused button would also take the space on key-up and click itself
+  document.addEventListener("keyup", e => { if (reading && e.key === " " && !(e.target.closest && e.target.closest("input, textarea, select, [contenteditable]"))) e.preventDefault() }, true);
+
+  // Re-draw after a display option changes, keeping the same phrase in the same place on screen.
+  function renderKeepPlace() {
+    const cards = [...view.querySelectorAll(".card")];
+    const bar = document.querySelector(".bar").getBoundingClientRect().bottom;
+    const i = cards.findIndex(c => c.getBoundingClientRect().bottom > bar + 8);
+    const offset = i >= 0 ? cards[i].getBoundingClientRect().top : 0;
+    const y = window.scrollY;
+    render();
+    const again = view.querySelectorAll(".card")[i];
+    if (i >= 0 && again) window.scrollBy(0, again.getBoundingClientRect().top - offset);
+    else window.scrollTo(0, y);
+  }
+  function bindToggle(id, key) {
+    const b = document.getElementById(id);
+    b.setAttribute("aria-pressed", String(opts[key]));
+    b.onclick = () => { opts[key] = !opts[key]; store.set(key, opts[key]); b.setAttribute("aria-pressed", String(opts[key])); renderKeepPlace() };
+  }
+  // Turn a <select> into the in-page selector above; the <select> stays (hidden) as the source of the value.
+  // Open: the box widens to its longest option and the pills beside it move aside, so the gaps stay as they were;
+  // its height in the row stays the same, so the list floats over what is below.
+  function setOpen(d, on) {
+    if (!on) { d.style.width = ""; d.style.height = ""; d.classList.remove("open"); return }
+    const w0 = d.offsetWidth;
+    d.style.width = w0 + "px"; d.style.height = d.offsetHeight + "px";
+    d.classList.add("open", "measuring");
+    const w = Math.min(Math.max(w0, Math.ceil(d.querySelector(".drop-box").getBoundingClientRect().width)), d.parentElement.clientWidth);
+    d.classList.remove("measuring");
+    void d.offsetWidth;  // start the widening from the closed width
+    d.style.width = w + "px";
+  }
+  function closeDrops(except) { document.querySelectorAll(".drop.open").forEach(x => { if (x !== except) setOpen(x, false) }) }
+  function dropify(sel) {
+    if (!sel) return;
+    let d = sel.__drop;
+    if (!d) {
+      d = document.createElement("div"); d.className = "drop"; sel.after(d); sel.__drop = d; sel.classList.add("native-hidden");
+      d.addEventListener("click", e => {
+        const it = e.target.closest(".drop-item");
+        if (it) { sel.value = it.dataset.v; sel.dispatchEvent(new Event("change")); setOpen(d, false); dropify(sel); return }
+        const open = !d.classList.contains("open"); closeDrops(d); setOpen(d, open);
+      });
+    }
+    d.hidden = sel.hidden;
+    const cur = sel.selectedOptions[0];
+    d.innerHTML = `<div class="drop-box"><button type="button" class="drop-head" aria-haspopup="listbox" aria-label="${esc(sel.getAttribute("aria-label") || "")}"><span>${esc(cur ? cur.textContent : "")}</span><span class="chev" aria-hidden="true"></span></button>
+      <div class="drop-list" role="listbox">${[...sel.options].map(o => `<button type="button" class="drop-item${o.selected ? " on" : ""}" role="option" aria-selected="${o.selected}" data-v="${esc(o.value)}">${esc(o.textContent.replace(/^(Voice|Repeat):\s*/, ""))}</button>`).join("")}</div></div>`;
+  }
+  document.addEventListener("click", e => { if (!e.target.closest(".drop")) closeDrops() });
+  document.addEventListener("keydown", e => { if (e.key === "Escape") closeDrops() });
+
+  // Options row: folded by default, the arrow button opens and closes it (remembered)
+  const optsWrap = document.getElementById("optsWrap"), optsBtn = document.getElementById("optsBtn");
+  function showOpts(on) {
+    if (!on) closeDrops();
+    optsWrap.classList.toggle("open", on);
+    if (!on) optsWrap.classList.remove("shown");
+    optsWrap.firstElementChild.inert = !on;
+    optsBtn.setAttribute("aria-expanded", on);
+    store.set("optsOpen", on);
+  }
+  optsWrap.addEventListener("transitionend", () => { if (optsWrap.classList.contains("open")) optsWrap.classList.add("shown") });
+  optsBtn.onclick = () => showOpts(!optsWrap.classList.contains("open"));
+  showOpts(store.get("optsOpen", false));
+  if (optsWrap.classList.contains("open")) optsWrap.classList.add("shown");
+
+  bindToggle("optPractice", "practice"); bindToggle("optPron", "pron");
+  const sp = document.getElementById("speed"); sp.value = opts.speed;
+  sp.onchange = () => { opts.speed = sp.value; store.set("speed", sp.value) };
+  dropify(sp);
+  document.getElementById("back").onclick = back;
+  document.getElementById("home").onclick = () => { if (stack.length > 1) history.go(1 - stack.length) };
+  // Voice picker: every English voice this browser has; the choice is remembered on this device.
+  const vp = document.getElementById("voicePick");
+  // Joke voices and the old robotic ones (Eloquence) are left out of the menu.
+  const SKIP = /^(Albert|Bad News|Bahh|Bells|Boing|Bubbles|Cellos|Good News|Jester|Organ|Superstar|Trinoids|Whisper|Wobble|Zarvox|Grandma|Grandpa|Eddy|Flo|Reed|Rocko|Sandy|Shelley|Junior|Ralph|Fred|Kathy)\b/i;
+  const region = v => ({ US: "US", GB: "UK", AU: "Australia", IE: "Ireland", IN: "India", ZA: "South Africa", CA: "Canada", NZ: "New Zealand" })[(v.lang.split(/[-_]/)[1] || "").toUpperCase()] || v.lang;
+  function fillVoices() {
+    const seen = new Set();
+    const vs = enVoices().filter(v => !SKIP.test(v.name) && !seen.has(v.name + v.lang) && seen.add(v.name + v.lang))
+      .sort((a, b) => (isEnUS(b) - isEnUS(a)) || a.name.localeCompare(b.name));
+    if (!vs.length) { vp.hidden = true; dropify(vp); return }
+    const cur = voice();
+    vp.innerHTML = vs.map(v => `<option value="${esc(v.name)}"${cur && v.name === cur.name ? " selected" : ""}>Voice: ${esc(v.name)} · ${esc(region(v))}</option>`).join("");
+    vp.hidden = false;
+    dropify(vp);
+  }
+  vp.onchange = () => { opts.voice = vp.value; store.set("voice", vp.value); say("Hello. This is how I sound.") };
+  if (tts) { fillVoices(); speechSynthesis.onvoiceschanged = fillVoices }
+
+  // Optional deep link: #p2 or #p2-s5
+  stack = [{ v: "home" }];
+  const h = (location.hash || "").slice(1);
+  history.replaceState({ depth: 1 }, "", location.pathname);
+  if (h) {
+    const [sid, tid] = h.split("-");
+    const s = S.find(x => x.id === sid && !x.soon);
+    if (s) {
+      stack.push({ v: "section", s: sid }); history.pushState({ depth: 2 }, "");
+      if (tid && s.topics.some(t => t.id === tid)) { stack.push({ v: "topic", s: sid, t: tid }); history.pushState({ depth: 3 }, "") }
+    }
+  }
+  applyDock();
+  render();
+})();
+</script>
+</body>
+</html>
