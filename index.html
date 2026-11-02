@@ -143,7 +143,9 @@ main.in-topic { padding-top: 14px }
 .stage-title { flex: 1; min-width: 0; font-family: var(--display); font-weight: 600; font-size: 13px; letter-spacing: .12em; text-transform: uppercase; color: var(--red); white-space: nowrap; overflow: hidden; text-overflow: ellipsis }
 .stage-x { flex: none; display: grid; place-items: center; width: 44px; height: 44px; border: 0; border-radius: 999px; background: rgba(255,255,255,.1); color: #fff }
 .stage-x:hover { background: rgba(255,255,255,.2) }
-.stage-body { flex: 1; min-height: 0; overflow-y: auto; display: flex; flex-direction: column; width: 100%; max-width: 980px; margin: 0 auto; padding: 8px 0 }
+.stage-body { flex: 1; min-height: 0; overflow-y: auto; display: flex; flex-direction: column; width: 100%; max-width: 980px; margin: 0 auto; padding: 8px 0; scrollbar-width: none;
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 7%, #000 93%, transparent 100%); mask-image: linear-gradient(to bottom, transparent 0, #000 7%, #000 93%, transparent 100%) }
+.stage-body::-webkit-scrollbar { display: none }
 .stage-in { margin: auto 0; display: flex; flex-direction: column; gap: 14px }  /* centred, and still scrolls from the top when long */
 .stage-sit { color: var(--muted); font-size: clamp(15px, 2.4vh + 6px, 20px) }
 .stage .en { font-family: var(--display); font-weight: 800; font-size: clamp(24px, min(6.2vw, 8.5vh), 60px); line-height: 1.2; margin: 0; text-wrap: balance }
@@ -620,7 +622,7 @@ button:focus-visible, select:focus-visible { outline-color: var(--blue) }
       const u = new SpeechSynthesisUtterance(c.text);
       useVoice(u, v);
       u.rate = rate;
-      u.onstart = () => { if (first) { first = false; h.start() } h.chunk(c.at) };
+      u.onstart = () => { if (first) { first = false; h.start() } h.chunk(c.at, c.text.length) };
       u.onboundary = e => { if (!e.name || e.name === "word") h.word(c.at + e.charIndex) };
       u.onend = next;
       u.onerror = next;
@@ -650,6 +652,7 @@ button:focus-visible, select:focus-visible { outline-color: var(--blue) }
         els.forEach(el => el.classList.add("karaoke"));
         words.forEach(w => { w.classList.toggle("said", +w.dataset.s <= d); w.classList.remove("cur") });
         els.forEach(el => { const said = el.querySelectorAll(".w.said"); if (said.length) said[said.length - 1].classList.add("cur") });
+        stageFollow();
       },
       undo() { els.forEach(el => el.classList.remove("karaoke")); words.forEach(w => w.classList.remove("said", "cur")) }
     };
@@ -772,16 +775,18 @@ button:focus-visible, select:focus-visible { outline-color: var(--blue) }
     const rate = parseFloat(opts.speed);
     const k = karaoke(cards[i], text, from);
     run.undo = k && k.undo;
+    run.k = k; run.chunkLen = 0;
     run.from = from; run.pos = from; run.heardWord = false; run.t0 = null; run.said = 0; run.est = estMs(spoken.slice(from), rate);
     runFill(spoken, run, gen);
     let started = 0;
     speakSeq(spoken, from, rate, {
       dead: () => reading !== run || run.gen !== gen,  // stopped, paused, or a player button already moved on
       start: () => { started = performance.now() },
-      chunk: at => { run.from = at; run.t0 = performance.now(); run.est = estMs(spoken.slice(at), rate); run.heardWord = false },
-      word: j => { run.pos = j; run.heardWord = true; run.said = Math.max(run.said, j / spoken.length); if (k) k.mark(j) },
+      chunk: (at, len) => { learnPace(run, rate); run.from = at; run.chunkLen = len; run.t0 = performance.now(); run.est = estMs(spoken.slice(at), rate); run.heardWord = false },
+      word: j => { run.pos = j; run.heardWord = true; run.said = Math.max(run.said, j / spoken.length); if (run.k) run.k.mark(j) },
       end: () => {
-        if (k) k.undo();
+        learnPace(run, rate);
+        if (run.k) run.k.undo();
         cancelAnimationFrame(fillRaf); setFill(1);
         const last = rep >= run.total;
         if (last) markHeard(cards[i], i);
@@ -809,10 +814,21 @@ button:focus-visible, select:focus-visible { outline-color: var(--blue) }
   let fillRaf = 0, cutAt = -1e9;  // cutAt: when a player button last cut the voice
   function setFill(p) { const el = document.querySelector("#readerTrack .now i"); if (el) el.style.width = (p * 100).toFixed(1) + "%" }
   const estMs = (txt, rate) => Math.max(600, txt.split(/\s+/).length * 60000 / (165 * (rate || 1)));
+  // Full screen with a voice that reports no words (Google's in Chrome): the place is worked out from the time spent,
+  // at the pace measured on the pieces already said, and set right at the start of each piece.
+  let voicePace = 0.0154;  // characters per millisecond at speed 1
+  function learnPace(run, rate) {
+    if (run.t0 === null || !run.chunkLen) return;
+    const ms = performance.now() - run.t0;
+    if (ms > 1500) voicePace = voicePace * .6 + (run.chunkLen / ms / rate) * .4;
+    run.chunkLen = 0;
+  }
   function runFill(spoken, run, gen) {
+    const rate = parseFloat(opts.speed);
     const tick = () => {
       if (reading !== run || run.gen !== gen) return;
       if (run.t0 !== null) { const base = run.from / spoken.length; setFill(Math.min(.97, Math.max(base + (performance.now() - run.t0) / run.est * (1 - base), run.said))) }
+      if (run.t0 !== null && run.k && !run.heardWord && run.chunkLen && staged()) run.k.mark(Math.min(run.from + (performance.now() - run.t0) * voicePace * rate, run.from + run.chunkLen - 1));
       fillRaf = requestAnimationFrame(tick);
     };
     fillRaf = requestAnimationFrame(tick);
@@ -863,6 +879,19 @@ button:focus-visible, select:focus-visible { outline-color: var(--blue) }
   // The Full screen button opens it; on a phone, turning it sideways opens it too (and turning it back closes it).
   let stageAuto = false;
   function staged() { return !document.getElementById("stage").hidden }
+  // Like Spotify's lyrics: the line being said stays a third of the way down. Scrolling by hand takes over for 3 seconds.
+  let stageHold = 0, stageLine = null;
+  function stageFollow() {
+    if (!staged() || performance.now() < stageHold) return;
+    const body = document.getElementById("stageBody"), cur = body.querySelector(".en .w.cur");
+    if (!cur) return;
+    const top = cur.getBoundingClientRect().top;
+    if (stageLine === cur.offsetTop) return;
+    stageLine = cur.offsetTop;
+    const target = body.scrollTop + top - body.getBoundingClientRect().top - body.clientHeight / 3;
+    body.scrollTo({ top: Math.max(0, target), behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
+  }
+  ["wheel", "touchmove"].forEach(ev => document.getElementById("stageBody").addEventListener(ev, () => { stageHold = performance.now() + 3000; stageLine = null }, { passive: true }));
   function stageShow() {
     if (!staged() || !reading) return;
     const it = reading.items[reading.i];
@@ -875,6 +904,7 @@ button:focus-visible, select:focus-visible { outline-color: var(--blue) }
       <p class="en">${esc(it.en)}</p>
       ${opts.pron && pr ? `<div class="pron">Pronunciación: ${pronHtml(pr)}</div>` : ""}
       ${opts.es && it.es ? `<div class="es">${esc(it.es)}</div>` : ""}</div>`;
+    document.getElementById("stageBody").scrollTop = 0; stageHold = 0; stageLine = null;
   }
   function enterStage(auto) {
     const top = stack[stack.length - 1];
@@ -891,6 +921,12 @@ button:focus-visible, select:focus-visible { outline-color: var(--blue) }
     const b = document.getElementById("readerFull");
     b.innerHTML = '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="4 14 10 14 10 20"/><polyline points="20 10 14 10 14 4"/><line x1="14" x2="21" y1="10" y2="3"/><line x1="3" x2="10" y1="21" y2="14"/></svg>'; b.setAttribute("aria-label", "Exit full screen"); b.title = "Exit full screen";
     stageShow();
+    // Already speaking: the words on this screen light up too, from the place reached.
+    if (reading && !reading.paused && reading.t0 != null) {
+      const c = view.querySelectorAll(".card")[reading.i];
+      reading.k = karaoke(c, reading.items[reading.i].en, reading.heardWord ? reading.pos : reading.from);
+      reading.undo = reading.k && reading.k.undo;
+    }
     // a pressed button may also hide the browser's own bars (not every phone allows it)
     if (!auto && document.documentElement.requestFullscreen) document.documentElement.requestFullscreen().catch(() => {});
   }
