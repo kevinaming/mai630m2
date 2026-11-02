@@ -6,7 +6,7 @@ import content as C
 DECK = os.path.expanduser("~/Desktop/AU/MAI 630/Modulo 2/Slides/MAI630_Module2_Class_en.pptx")
 HERE = os.path.dirname(os.path.abspath(__file__))
 NUM_WORDS = set("""zero one two three four five six seven eight nine ten eleven twelve thirteen fourteen fifteen sixteen seventeen eighteen nineteen
-twenty thirty forty fifty sixty seventy eighty ninety hundred thousand million point by percent quarter third eighth""".split())
+twenty thirty forty fifty sixty seventy eighty ninety hundred thousand million point by percent quarter third eighth ninth""".split())
 
 def slide_title(s, i):
     if i in C.TITLES: return C.TITLES[i]

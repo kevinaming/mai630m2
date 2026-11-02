@@ -81,7 +81,7 @@ HARD_22 = [
 # Typical presenter phrases: from the notes ("yours") and common ones ("common"), by what they do in a talk
 PHRASES = [
     ("Open the class", [
-        ("yours", "Good afternoon, everyone, and welcome to our Computer Vision class."),
+        ("yours", "Good evening, everyone, and welcome to our Computer Vision class."),
         ("yours", "Before we start, let's remember where we stopped last week."),
         ("yours", "Ok, let's find where we are on the course map."),
         ("yours", "At the end of today's class I will explain the activity."),
